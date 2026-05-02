@@ -1,26 +1,99 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-brand-50: #ecfdf3;
+  --color-brand-100: #d1fadf;
+  --color-brand-200: #a6f4c5;
+  --color-brand-300: #6ce9a6;
+  --color-brand-400: #32d583;
+  --color-brand-500: #12b76a;
+  --color-brand-600: #0f9b5b;
+  --color-brand-700: #0a7c47;
+  --color-brand-800: #075f37;
+  --color-brand-900: #054028;
+
+  --color-streak: #f59e0b;
+  --color-xp: #facc15;
+
+  --font-display: var(--font-geist-sans), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), monospace;
+
+  --radius-card: 1.25rem;
+  --radius-pill: 9999px;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  html, body {
+    background: #fafafa;
+    color: #0a0a0a;
+  }
+  * {
+    -webkit-font-smoothing: antialiased;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  .btn-3d {
+    box-shadow: 0 4px 0 0 rgba(0, 0, 0, 0.15);
+    transition: transform 0.05s ease, box-shadow 0.05s ease;
+  }
+  .btn-3d:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 0 rgba(0, 0, 0, 0.15);
+  }
+  .btn-3d-brand {
+    box-shadow: 0 4px 0 0 var(--color-brand-700);
+  }
+  .btn-3d-brand:active {
+    box-shadow: 0 2px 0 0 var(--color-brand-700);
+  }
+  .btn-3d-danger {
+    box-shadow: 0 4px 0 0 #b91c1c;
+  }
+  .btn-3d-danger:active {
+    box-shadow: 0 2px 0 0 #b91c1c;
+  }
+
+  .lesson-node {
+    box-shadow: 0 6px 0 0 rgba(0, 0, 0, 0.1);
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+  }
+  .lesson-node:hover {
+    transform: translateY(-2px);
+  }
+  .lesson-node:active {
+    transform: translateY(2px);
+    box-shadow: 0 3px 0 0 rgba(0, 0, 0, 0.1);
+  }
+}
+
+@keyframes pop {
+  0% { transform: scale(0.9); opacity: 0; }
+  60% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.animate-pop { animation: pop 0.3s ease forwards; }
+
+@keyframes slide-up {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.animate-slide-up { animation: slide-up 0.25s ease forwards; }
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+.animate-shake { animation: shake 0.3s ease; }
+
+@keyframes confetti-fall {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(var(--drift, 0), 110vh, 0) rotate(var(--rotate, 360deg));
+    opacity: 0;
+  }
 }

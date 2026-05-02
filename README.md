@@ -1,36 +1,103 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Curio — Duolingo для всего
 
-## Getting Started
+AI генерирует структурированный курс по любой теме: 5–12 уроков, 5 типов упражнений, streak, XP. В духе Duolingo, но для маркетинга, философии, system design — чего угодно.
 
-First, run the development server:
+## Стек
+
+- **Next.js 16** (App Router, Turbopack, Node 24)
+- **AI SDK v6** + Vercel AI Gateway → Claude Sonnet 4.6
+- **Tailwind CSS v4**
+- **SQLite** + Drizzle ORM (локально; в проде нужен Postgres/libsql — см. `docs/adr/0002-storage.md`)
+- **Zod** для structured output
+
+## Запуск локально
 
 ```bash
+npm install
+cp .env.local.example .env.local
+# впиши AI_GATEWAY_API_KEY (или ANTHROPIC_API_KEY)
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Открой [http://localhost:3000](http://localhost:3000), введи любую тему — получишь курс через 10–30 секунд.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Структура
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+app/
+  page.tsx                       — лендинг с topic-формой
+  dashboard/                     — мои курсы + streak/XP
+  course/[id]/                   — duolingo-style путь уроков
+  course/[id]/lesson/[lessonId]/ — плеер урока
+  api/courses/                   — POST: генерация курса
+  api/courses/[id]/              — GET: курс + прогресс
+  api/lessons/[id]/              — GET: ленивая генерация контента урока
+  api/lessons/[id]/complete/     — POST: запись прохождения + XP
+  api/me/                        — GET: статистика и список курсов
+components/
+  lesson/                        — плеер + 5 типов упражнений
+  ui/                            — button, input, progress-bar
+lib/
+  schemas.ts                     — Zod schemas для AI structured output
+  ai.ts                          — генерация курса и уроков
+  db.ts, db-schema.ts            — SQLite + Drizzle
+  repository.ts                  — DB-слой
+docs/
+  adr/                           — архитектурные решения
+  CONTEXT.md                     — доменная модель
+```
 
-## Learn More
+## Типы упражнений
 
-To learn more about Next.js, take a look at the following resources:
+1. **Multiple choice** — 4 варианта, 1 правильный
+2. **Fill blank** — заполнить пропуск (с alternative answers)
+3. **True/false** — правда или нет
+4. **Matching** — сопоставить пары (click-to-pair)
+5. **Order** — расставить по порядку (pick-and-arrange)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Deploy на Vercel
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+# 1. Установи Vercel CLI (если нет)
+npm i -g vercel
 
-## Deploy on Vercel
+# 2. Залогинься и привяжи проект
+vercel link
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# 3. Добавь AI Gateway ключ
+vercel env add AI_GATEWAY_API_KEY
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# 4. Подключи Postgres из Marketplace (Neon / Supabase) ИЛИ Turso (libsql)
+#    Marketplace: https://vercel.com/marketplace/category/storage
+#    После подключения env-переменные пробросятся автоматически
+vercel env pull .env.local
+
+# 5. Деплой
+vercel deploy --prod
+```
+
+⚠️ **SQLite не работает в проде:** filesystem на Vercel Functions read-only. Нужен один из:
+- **Neon Postgres** (Vercel Marketplace) — нужно переписать `lib/db.ts` на `drizzle-orm/neon-http` + поменять `sqliteTable` на `pgTable` в `db-schema.ts`
+- **Turso (libsql)** — proще: тот же `sqliteTable`, меняется только драйвер. Установить `@libsql/client`, в `db.ts` использовать `drizzle-orm/libsql`. Все repository-функции придётся сделать `async`.
+- **Vercel Blob** — для прототипа можно хранить JSON в Blob (но плохо масштабируется)
+
+См. `docs/adr/0002-storage.md` для деталей.
+
+## Env vars
+
+| Variable | Required | Описание |
+|---|---|---|
+| `AI_GATEWAY_API_KEY` | да* | Vercel AI Gateway ключ. Получить: https://vercel.com/dashboard/ai-gateway |
+| `ANTHROPIC_API_KEY` | альтернатива | Прямой Anthropic ключ (fallback если нет AI Gateway) |
+| `AI_MODEL` | нет | Override модели. По умолчанию `anthropic/claude-sonnet-4-6` |
+
+*Один из двух ключей обязателен.
+
+## Скрипты
+
+```bash
+npm run dev    # dev сервер (Turbopack)
+npm run build  # production build
+npm start      # запустить production билд
+npm run lint   # ESLint
+```
