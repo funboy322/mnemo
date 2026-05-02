@@ -1,4 +1,5 @@
 "use client";
+import * as React from "react";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
 import type { Exercise } from "@/lib/schemas";
@@ -14,6 +15,20 @@ export function Feedback({
   onContinue: () => void;
 }) {
   const explanation = getExplanation(exercise);
+
+  // Enter advances to next exercise
+  React.useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA")) return;
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        onContinue();
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onContinue]);
   return (
     <div
       className={cn(

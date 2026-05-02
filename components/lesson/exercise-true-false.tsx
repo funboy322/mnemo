@@ -19,6 +19,29 @@ export function ExerciseTrueFalse({ exercise, answered, onAnswer }: Props) {
     onAnswer(choice === exercise.isTrue, choice);
   }
 
+  // Keyboard: 1/T = true, 2/F = false, Enter = check
+  React.useEffect(() => {
+    if (answered) return;
+    function onKey(e: KeyboardEvent) {
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA")) return;
+      const k = e.key.toLowerCase();
+      if (k === "1" || k === "t" || k === "p" || k === "д") {
+        e.preventDefault();
+        setChoice(true);
+      } else if (k === "2" || k === "f" || k === "н") {
+        e.preventDefault();
+        setChoice(false);
+      } else if (e.key === "Enter" && choice !== null) {
+        e.preventDefault();
+        check();
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [answered, choice]);
+
   function isCorrectChoice(opt: boolean) {
     return answered && opt === exercise.isTrue;
   }

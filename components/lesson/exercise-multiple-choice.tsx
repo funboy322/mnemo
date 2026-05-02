@@ -18,6 +18,26 @@ export function ExerciseMultipleChoice({ exercise, answered, onAnswer }: Props) 
     onAnswer(selected === exercise.correctIndex, selected);
   }
 
+  // Keyboard: 1-4 selects option, Enter checks
+  React.useEffect(() => {
+    if (answered) return;
+    function onKey(e: KeyboardEvent) {
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA")) return;
+      const num = parseInt(e.key, 10);
+      if (num >= 1 && num <= 4) {
+        e.preventDefault();
+        setSelected(num - 1);
+      } else if (e.key === "Enter" && selected !== null) {
+        e.preventDefault();
+        check();
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [answered, selected]);
+
   return (
     <div>
       <h2 className="text-xl sm:text-2xl font-bold text-zinc-900 leading-snug">
