@@ -63,7 +63,8 @@ export function TopicForm() {
       });
       const data = await res.json();
       if (!res.ok || !data.courseId) {
-        throw new Error(data.error || data.message || t.errorGenerationFailed);
+        // Prefer the specific `message` (e.g. "No AI credentials...") over generic `error` ("Generation failed")
+        throw new Error(data.message || data.error || t.errorGenerationFailed);
       }
       router.push(`/course/${data.courseId}`);
     } catch (err) {
@@ -82,7 +83,7 @@ export function TopicForm() {
           className="border-0 h-14 text-lg px-2 focus:ring-0 focus:border-transparent"
           disabled={loading}
         />
-        <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <div className="mt-3 space-y-3">
           <SelectGroup
             label={t.levelLabel}
             value={level}
@@ -90,23 +91,26 @@ export function TopicForm() {
             onChange={(v) => setLevel(v as typeof level)}
             disabled={loading}
           />
-          <SelectGroup
-            label={t.depthLabel}
-            value={String(depth)}
-            options={DEPTHS.map((d) => ({ value: String(d), label: depthLabels[d] }))}
-            onChange={(v) => setDepth(Number(v) as typeof depth)}
-            disabled={loading}
-          />
-          <SelectGroup
-            label={t.langLabel}
-            value={language}
-            options={SUPPORTED_LOCALES.map((lc) => ({
-              value: lc,
-              label: `${LOCALE_FLAGS[lc]} ${LOCALE_LABELS[lc]}`,
-            }))}
-            onChange={(v) => setLanguage(v as Language)}
-            disabled={loading}
-          />
+          <div className="grid grid-cols-2 gap-3">
+            <SelectGroup
+              label={t.depthLabel}
+              value={String(depth)}
+              options={DEPTHS.map((d) => ({ value: String(d), label: depthLabels[d] }))}
+              onChange={(v) => setDepth(Number(v) as typeof depth)}
+              disabled={loading}
+            />
+            <SelectGroup
+              label={t.langLabel}
+              value={language}
+              options={SUPPORTED_LOCALES.map((lc) => ({
+                value: lc,
+                label: LOCALE_FLAGS[lc],
+                title: LOCALE_LABELS[lc],
+              }))}
+              onChange={(v) => setLanguage(v as Language)}
+              disabled={loading}
+            />
+          </div>
         </div>
       </div>
 
@@ -161,7 +165,7 @@ function SelectGroup({
 }: {
   label: string;
   value: string;
-  options: { value: string; label: string }[];
+  options: { value: string; label: string; title?: string }[];
   onChange: (v: string) => void;
   disabled?: boolean;
 }) {
@@ -177,7 +181,9 @@ function SelectGroup({
               type="button"
               disabled={disabled}
               onClick={() => onChange(opt.value)}
-              className={`flex-1 text-xs sm:text-sm font-bold py-2 rounded-xl transition-all whitespace-nowrap overflow-hidden text-ellipsis ${
+              title={opt.title ?? opt.label}
+              aria-label={opt.title ?? opt.label}
+              className={`flex-1 text-sm font-bold py-2 rounded-xl transition-all whitespace-nowrap overflow-hidden text-ellipsis px-2 ${
                 active ? "bg-white text-brand-700 shadow-sm" : "text-zinc-500 hover:text-zinc-700"
               }`}
             >
