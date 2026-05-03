@@ -1,6 +1,7 @@
 "use client";
 import * as React from "react";
 import { Button } from "../ui/button";
+import { useT } from "../locale-provider";
 import { cn, shuffled } from "@/lib/utils";
 import type { Exercise } from "@/lib/schemas";
 
@@ -13,6 +14,7 @@ type Props = {
 type Match = { leftIdx: number; rightIdx: number };
 
 export function ExerciseMatching({ exercise, answered, onAnswer }: Props) {
+  const t = useT();
   const lefts = React.useMemo(
     () => exercise.pairs.map((p, i) => ({ id: `L${i}`, text: p.left, pairIndex: i })),
     [exercise.pairs],
@@ -65,7 +67,7 @@ export function ExerciseMatching({ exercise, answered, onAnswer }: Props) {
   return (
     <div>
       <p className="text-xs uppercase tracking-wider font-bold text-zinc-400 mb-3">
-        Сопоставь
+        {t.matchPrompt}
       </p>
       <h3 className="text-lg sm:text-xl font-bold text-zinc-900 mb-6">{exercise.prompt}</h3>
 
@@ -129,7 +131,7 @@ export function ExerciseMatching({ exercise, answered, onAnswer }: Props) {
           size="lg"
           className="w-full mt-8"
         >
-          Проверить
+          {t.check}
         </Button>
       )}
     </div>

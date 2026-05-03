@@ -26,6 +26,7 @@ function resolveModel(): LanguageModel | string {
 const LANG_LABEL: Record<string, string> = {
   ru: "Russian (русский)",
   en: "English",
+  tr: "Turkish (Türkçe)",
 };
 
 const LEVEL_LABEL: Record<string, string> = {

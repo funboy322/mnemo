@@ -3,6 +3,7 @@ import * as React from "react";
 import Link from "next/link";
 import { Trophy, Zap, Target, Heart } from "lucide-react";
 import { Button } from "../ui/button";
+import { useT } from "../locale-provider";
 import { Confetti } from "./confetti";
 
 export function CompletionScreen({
@@ -18,22 +19,23 @@ export function CompletionScreen({
   hearts: number;
   xpEarned: number;
 }) {
+  const t = useT();
   const accuracy = Math.round((score / Math.max(total, 1)) * 100);
   const isPerfect = accuracy === 100;
   const headline = isPerfect
-    ? "Идеально!"
+    ? t.perfect
     : accuracy >= 80
-      ? "Отлично!"
+      ? t.great
       : accuracy >= 50
-        ? "Урок пройден"
-        : "Молодец, что закончил";
+        ? t.passed
+        : t.goodJob;
   const subheading = isPerfect
-    ? "100% правильных ответов. Так держать!"
+    ? t.perfectSub
     : accuracy >= 80
-      ? "Очень хороший результат."
+      ? t.greatSub
       : accuracy >= 50
-        ? "Уже знаешь больше, чем в начале."
-        : "Сложный урок — попробуй пройти снова, станет легче.";
+        ? t.passedSub
+        : t.goodJobSub;
 
   return (
     <div className="flex-1 flex items-center justify-center px-4 sm:px-6 py-12 relative overflow-hidden">
@@ -46,19 +48,19 @@ export function CompletionScreen({
         <div className="grid grid-cols-3 gap-3 mt-8">
           <Stat
             icon={<Zap className="h-5 w-5 text-yellow-500 fill-current" />}
-            label="Опыт"
+            label={t.xp}
             value={`+${xpEarned}`}
             tint="bg-yellow-50 border-yellow-200"
           />
           <Stat
             icon={<Target className="h-5 w-5 text-brand-600 fill-current" />}
-            label="Точность"
+            label={t.accuracy}
             value={`${accuracy}%`}
             tint="bg-brand-50 border-brand-200"
           />
           <Stat
             icon={<Heart className="h-5 w-5 text-red-500 fill-current" />}
-            label="Жизни"
+            label={t.hearts}
             value={`${hearts}/3`}
             tint="bg-red-50 border-red-200"
           />
@@ -67,15 +69,15 @@ export function CompletionScreen({
         {isPerfect && (
           <div className="mt-6 inline-flex items-center gap-2 bg-yellow-100 text-yellow-900 px-4 py-2 rounded-full font-bold">
             <Trophy className="h-5 w-5" />
-            Без единой ошибки
+            {t.withoutMistakes}
           </div>
         )}
 
         <Button asChild size="lg" className="w-full mt-8">
-          <Link href={`/course/${courseId}`}>Продолжить курс</Link>
+          <Link href={`/course/${courseId}`}>{t.continueCourse}</Link>
         </Button>
         <Button asChild variant="outline" size="md" className="w-full mt-3">
-          <Link href="/dashboard">К моим курсам</Link>
+          <Link href="/dashboard">{t.toMyCourses}</Link>
         </Button>
       </div>
     </div>

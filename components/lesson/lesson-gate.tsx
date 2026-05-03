@@ -3,6 +3,7 @@ import * as React from "react";
 import Link from "next/link";
 import { Loader2, ArrowLeft, Sparkles } from "lucide-react";
 import { Button } from "../ui/button";
+import { useT } from "../locale-provider";
 import { LessonPlayer } from "./lesson-player";
 import type { LessonContent } from "@/lib/schemas";
 
@@ -15,6 +16,7 @@ export function LessonGate(props: {
   initialContent: LessonContent | null;
   courseTitle: string;
 }) {
+  const t = useT();
   const [content, setContent] = React.useState<LessonContent | null>(props.initialContent);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -25,7 +27,7 @@ export function LessonGate(props: {
     try {
       const r = await fetch(`/api/lessons/${props.lessonId}`);
       const d = await r.json();
-      if (!r.ok) throw new Error(d.error || "Не удалось загрузить урок");
+      if (!r.ok) throw new Error(d.error || d.message || "Generation failed");
       setContent(d.lesson.content);
     } catch (err) {
       setError((err as Error).message);
@@ -51,19 +53,19 @@ export function LessonGate(props: {
         href={`/course/${props.courseId}`}
         className="inline-flex items-center gap-2 text-sm font-bold text-zinc-500 hover:text-zinc-900 mb-6"
       >
-        <ArrowLeft className="h-4 w-4" /> К курсу
+        <ArrowLeft className="h-4 w-4" /> {t.toCourse}
       </Link>
 
       <div className="rounded-card bg-white border-2 border-zinc-200 p-6 sm:p-8">
         <p className="text-xs uppercase tracking-wider text-brand-600 font-bold mb-2">
-          Новый урок
+          {t.newLesson}
         </p>
         <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-zinc-900">{props.title}</h1>
         <p className="mt-2 text-zinc-600 leading-relaxed">{props.summary}</p>
 
         <div className="mt-6">
           <p className="text-xs uppercase tracking-wider text-zinc-400 font-bold mb-2">
-            Чему научишься
+            {t.whatYoullLearn}
           </p>
           <ul className="space-y-1.5">
             {props.objectives.map((o) => (
@@ -81,27 +83,22 @@ export function LessonGate(props: {
           </div>
         )}
 
-        <Button
-          onClick={load}
-          disabled={loading}
-          size="lg"
-          className="w-full mt-8"
-        >
+        <Button onClick={load} disabled={loading} size="lg" className="w-full mt-8">
           {loading ? (
             <>
               <Loader2 className="h-5 w-5 animate-spin" />
-              Готовим материал...
+              {t.preparingMaterial}
             </>
           ) : (
             <>
               <Sparkles className="h-5 w-5" />
-              Начать урок
+              {t.startButton}
             </>
           )}
         </Button>
         {loading && (
           <p className="text-xs text-zinc-500 text-center mt-3 animate-pulse">
-            AI пишет упражнения и материалы. 10–20 секунд.
+            {t.preparingHint}
           </p>
         )}
       </div>

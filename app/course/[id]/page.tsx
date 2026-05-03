@@ -2,7 +2,8 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getCourse } from "@/lib/repository";
 import { CoursePath } from "@/components/course-path";
-import { labelLevel } from "@/lib/utils";
+import { labelLevelKey } from "@/lib/utils";
+import { getServerT } from "@/lib/i18n";
 
 export async function generateMetadata({
   params,
@@ -11,14 +12,11 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   const data = getCourse(id);
-  if (!data) return { title: "Курс не найден" };
+  if (!data) return { title: "Not found" };
   return {
     title: data.course.title,
     description: data.course.description,
-    openGraph: {
-      title: data.course.title,
-      description: data.course.description,
-    },
+    openGraph: { title: data.course.title, description: data.course.description },
   };
 }
 
@@ -26,6 +24,7 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
   const { id } = await params;
   const data = getCourse(id);
   if (!data) notFound();
+  const t = await getServerT();
 
   return (
     <div className="px-4 sm:px-6 py-6 sm:py-10 max-w-2xl mx-auto w-full">
@@ -34,9 +33,9 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
         <h1 className="text-2xl sm:text-3xl font-black tracking-tight">{data.course.title}</h1>
         <p className="mt-2 text-white/85 leading-relaxed">{data.course.description}</p>
         <div className="mt-4 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider bg-white/15 px-3 py-1.5 rounded-full">
-          <span>{data.lessons.length} уроков</span>
+          <span>{t.lessonsCount(data.lessons.length)}</span>
           <span className="opacity-50">·</span>
-          <span>{labelLevel(data.course.level)}</span>
+          <span>{t[labelLevelKey(data.course.level)]}</span>
         </div>
       </div>
 

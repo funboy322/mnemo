@@ -2,6 +2,7 @@
 import * as React from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
+import { useT } from "../locale-provider";
 import { cn } from "@/lib/utils";
 import type { Exercise } from "@/lib/schemas";
 
@@ -28,6 +29,7 @@ function splitOnceAtBlank(sentence: string): [string, string] {
 }
 
 export function ExerciseFillBlank({ exercise, answered, onAnswer }: Props) {
+  const t = useT();
   const [value, setValue] = React.useState("");
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [before, after] = splitOnceAtBlank(exercise.sentence);
@@ -46,7 +48,7 @@ export function ExerciseFillBlank({ exercise, answered, onAnswer }: Props) {
   return (
     <div>
       <p className="text-xs uppercase tracking-wider font-bold text-zinc-400 mb-3">
-        Заполни пропуск
+        {t.fillBlankPrompt}
       </p>
       <div className="rounded-card bg-white border-2 border-zinc-200 p-5 sm:p-6 text-lg sm:text-xl leading-relaxed text-zinc-900">
         <span>{before}</span>
@@ -84,7 +86,7 @@ export function ExerciseFillBlank({ exercise, answered, onAnswer }: Props) {
           size="lg"
           className="w-full mt-8"
         >
-          Проверить
+          {t.check}
         </Button>
       )}
     </div>

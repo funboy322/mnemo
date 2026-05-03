@@ -2,6 +2,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useUserId } from "./user-provider";
+import { useT } from "./locale-provider";
 import { Check, Lock, Play, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -79,6 +80,7 @@ function LessonNode({
   offsetX: number;
   courseId: string;
 }) {
+  const t = useT();
   const [open, setOpen] = React.useState(false);
   const ref = React.useRef<HTMLDivElement>(null);
 
@@ -128,10 +130,10 @@ function LessonNode({
           <div className="absolute top-full mt-3 z-20 w-72 animate-pop">
             <div className="rounded-card bg-white border-2 border-zinc-200 p-4 shadow-xl">
               <div className="flex items-center gap-2 text-xs uppercase tracking-wider font-bold text-zinc-400">
-                Урок {lesson.position + 1}
+                {t.lessonNumber(lesson.position + 1)}
                 {isDone && (
                   <span className="inline-flex items-center gap-1 text-brand-600">
-                    <Check className="h-3 w-3" /> пройден
+                    <Check className="h-3 w-3" /> {t.lessonCompleted}
                   </span>
                 )}
               </div>
@@ -141,7 +143,7 @@ function LessonNode({
                 href={`/course/${courseId}/lesson/${lesson.id}`}
                 className="mt-4 inline-flex w-full items-center justify-center h-11 rounded-2xl bg-brand-500 text-white font-bold uppercase tracking-wide btn-3d btn-3d-brand"
               >
-                {isDone ? "Повторить" : "Начать"}
+                {isDone ? t.replay : t.startLesson}
               </Link>
             </div>
           </div>

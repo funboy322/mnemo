@@ -1,6 +1,7 @@
 "use client";
 import * as React from "react";
 import { Button } from "../ui/button";
+import { useT } from "../locale-provider";
 import { cn, shuffled } from "@/lib/utils";
 import type { Exercise } from "@/lib/schemas";
 import { ChevronUp, ChevronDown, X } from "lucide-react";
@@ -14,6 +15,7 @@ type Props = {
 type Item = { id: number; text: string };
 
 export function ExerciseOrder({ exercise, answered, onAnswer }: Props) {
+  const t = useT();
   const correctOrder = React.useMemo(
     () => exercise.items.map((text, id) => ({ id, text })),
     [exercise.items],
@@ -50,14 +52,14 @@ export function ExerciseOrder({ exercise, answered, onAnswer }: Props) {
   return (
     <div>
       <p className="text-xs uppercase tracking-wider font-bold text-zinc-400 mb-3">
-        Расставь по порядку
+        {t.orderPrompt}
       </p>
       <h3 className="text-lg sm:text-xl font-bold text-zinc-900 mb-6">{exercise.prompt}</h3>
 
       <div className="rounded-card border-2 border-dashed border-zinc-300 bg-white p-3 min-h-[12rem]">
         {chosen.length === 0 ? (
           <p className="text-sm text-zinc-400 text-center py-8">
-            Нажимай на варианты ниже, чтобы добавить их сюда
+            {t.pickToAddHere}
           </p>
         ) : (
           <ol className="space-y-2">
@@ -85,7 +87,7 @@ export function ExerciseOrder({ exercise, answered, onAnswer }: Props) {
                           onClick={() => move(i, -1)}
                           disabled={i === 0}
                           className="text-zinc-400 hover:text-zinc-700 disabled:opacity-30"
-                          aria-label="Вверх"
+                          aria-label={t.moveUp}
                         >
                           <ChevronUp className="h-4 w-4" />
                         </button>
@@ -94,7 +96,7 @@ export function ExerciseOrder({ exercise, answered, onAnswer }: Props) {
                           onClick={() => move(i, 1)}
                           disabled={i === chosen.length - 1}
                           className="text-zinc-400 hover:text-zinc-700 disabled:opacity-30"
-                          aria-label="Вниз"
+                          aria-label={t.moveDown}
                         >
                           <ChevronDown className="h-4 w-4" />
                         </button>
@@ -105,7 +107,7 @@ export function ExerciseOrder({ exercise, answered, onAnswer }: Props) {
                         type="button"
                         onClick={() => unpick(it)}
                         className="text-zinc-400 hover:text-red-600"
-                        aria-label="Убрать"
+                        aria-label={t.remove}
                       >
                         <X className="h-4 w-4" />
                       </button>
@@ -141,7 +143,7 @@ export function ExerciseOrder({ exercise, answered, onAnswer }: Props) {
           size="lg"
           className="w-full mt-8"
         >
-          Проверить
+          {t.check}
         </Button>
       )}
     </div>

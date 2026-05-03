@@ -1,6 +1,7 @@
 "use client";
 import * as React from "react";
 import { Button } from "../ui/button";
+import { useT } from "../locale-provider";
 import { cn } from "@/lib/utils";
 import type { Exercise } from "@/lib/schemas";
 
@@ -11,6 +12,7 @@ type Props = {
 };
 
 export function ExerciseMultipleChoice({ exercise, answered, onAnswer }: Props) {
+  const t = useT();
   const [selected, setSelected] = React.useState<number | null>(null);
 
   function check() {
@@ -87,7 +89,7 @@ export function ExerciseMultipleChoice({ exercise, answered, onAnswer }: Props) 
           size="lg"
           className="w-full mt-8"
         >
-          Проверить
+          {t.check}
         </Button>
       )}
     </div>

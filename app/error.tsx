@@ -1,5 +1,6 @@
 "use client";
 import { useEffect } from "react";
+import { useT } from "@/components/locale-provider";
 
 export default function ErrorBoundary({
   error,
@@ -8,6 +9,7 @@ export default function ErrorBoundary({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const t = useT();
   useEffect(() => {
     console.error("App error:", error);
   }, [error]);
@@ -16,11 +18,9 @@ export default function ErrorBoundary({
     <div className="flex flex-col flex-1 items-center justify-center px-4 py-20 text-center">
       <div className="text-7xl mb-4">😬</div>
       <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-zinc-900">
-        Что-то пошло не так
+        {t.somethingWrong}
       </h1>
-      <p className="mt-2 text-zinc-600 max-w-md">
-        {error.message || "Неизвестная ошибка. Попробуй ещё раз."}
-      </p>
+      <p className="mt-2 text-zinc-600 max-w-md">{error.message || t.unknownError}</p>
       {error.digest && (
         <p className="mt-1 text-xs text-zinc-400 font-mono">id: {error.digest}</p>
       )}
@@ -29,13 +29,13 @@ export default function ErrorBoundary({
           onClick={() => reset()}
           className="inline-flex items-center justify-center h-12 px-6 rounded-2xl bg-brand-500 text-white font-bold uppercase tracking-wide btn-3d btn-3d-brand"
         >
-          Повторить
+          {t.retry}
         </button>
         <a
           href="/"
           className="inline-flex items-center justify-center h-12 px-6 rounded-2xl bg-white border-2 border-zinc-200 text-zinc-800 font-bold"
         >
-          На главную
+          {t.goHome}
         </a>
       </div>
     </div>

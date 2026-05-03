@@ -3,7 +3,7 @@ import { z } from "zod";
 export const LevelSchema = z.enum(["beginner", "intermediate", "advanced"]);
 export type Level = z.infer<typeof LevelSchema>;
 
-export const LANGUAGES = ["en", "ru"] as const;
+export const LANGUAGES = ["en", "ru", "tr"] as const;
 export const LanguageSchema = z.enum(LANGUAGES);
 export type Language = z.infer<typeof LanguageSchema>;
 
@@ -11,7 +11,7 @@ export const CourseInputSchema = z.object({
   topic: z.string().min(2).max(200),
   level: LevelSchema,
   depth: z.union([z.literal(5), z.literal(8), z.literal(12)]),
-  language: LanguageSchema.default("ru"),
+  language: LanguageSchema.default("en"),
 });
 export type CourseInput = z.infer<typeof CourseInputSchema>;
 

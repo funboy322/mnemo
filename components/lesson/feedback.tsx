@@ -1,8 +1,10 @@
 "use client";
 import * as React from "react";
 import { Button } from "../ui/button";
+import { useT } from "../locale-provider";
 import { cn } from "@/lib/utils";
 import type { Exercise } from "@/lib/schemas";
+import type { Dict } from "@/lib/i18n";
 import { CheckCircle2, XCircle } from "lucide-react";
 
 export function Feedback({
@@ -14,6 +16,7 @@ export function Feedback({
   exercise: Exercise;
   onContinue: () => void;
 }) {
+  const t = useT();
   const explanation = getExplanation(exercise);
 
   // Enter advances to next exercise
@@ -29,6 +32,7 @@ export function Feedback({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onContinue]);
+
   return (
     <div
       className={cn(
@@ -46,9 +50,9 @@ export function Feedback({
         </div>
         <div className="flex-1">
           <h3 className={cn("text-xl font-black", correct ? "text-brand-700" : "text-red-700")}>
-            {correct ? "Верно!" : "Неверно"}
+            {correct ? t.correct : t.incorrect}
           </h3>
-          {!correct && <CorrectAnswer exercise={exercise} />}
+          {!correct && <CorrectAnswer exercise={exercise} t={t} />}
           {explanation && (
             <p className={cn("mt-1 text-sm leading-relaxed", correct ? "text-brand-800" : "text-red-800")}>
               {explanation}
@@ -61,7 +65,7 @@ export function Feedback({
           onClick={onContinue}
           className="self-center shrink-0"
         >
-          Дальше
+          {t.next}
         </Button>
       </div>
     </div>
@@ -76,24 +80,24 @@ function getExplanation(ex: Exercise): string | null {
   return null;
 }
 
-function CorrectAnswer({ exercise }: { exercise: Exercise }) {
+function CorrectAnswer({ exercise, t }: { exercise: Exercise; t: Dict }) {
   switch (exercise.type) {
     case "multiple_choice":
       return (
         <p className="text-sm text-red-900 mt-1">
-          Правильный ответ: <b>{exercise.options[exercise.correctIndex]}</b>
+          {t.correctAnswerIs} <b>{exercise.options[exercise.correctIndex]}</b>
         </p>
       );
     case "fill_blank":
       return (
         <p className="text-sm text-red-900 mt-1">
-          Правильно: <b>{exercise.answer}</b>
+          {t.correctlyIs} <b>{exercise.answer}</b>
         </p>
       );
     case "true_false":
       return (
         <p className="text-sm text-red-900 mt-1">
-          Правильный ответ: <b>{exercise.isTrue ? "Правда" : "Неправда"}</b>
+          {t.correctAnswerIs} <b>{exercise.isTrue ? t.trueLabel : t.falseLabel}</b>
         </p>
       );
     case "order":

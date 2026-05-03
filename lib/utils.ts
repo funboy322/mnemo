@@ -20,12 +20,10 @@ export function shuffled<T>(arr: readonly T[], seed = 1): T[] {
   return a;
 }
 
-export const LEVEL_LABELS: Record<string, string> = {
-  beginner: "Новичок",
-  intermediate: "Средний",
-  advanced: "Продвинутый",
-};
-
-export function labelLevel(level: string): string {
-  return LEVEL_LABELS[level] ?? level;
+// Level labeling now handled by `lib/i18n.ts` (Dict.levelBeginner etc).
+// Keep this helper as a fallback for places without locale context.
+export function labelLevelKey(level: string): "levelBeginner" | "levelIntermediate" | "levelAdvanced" {
+  if (level === "intermediate") return "levelIntermediate";
+  if (level === "advanced") return "levelAdvanced";
+  return "levelBeginner";
 }

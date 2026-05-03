@@ -1,8 +1,8 @@
 "use client";
 import * as React from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useUserId } from "../user-provider";
+import { useT } from "../locale-provider";
 import { Button } from "../ui/button";
 import { ProgressBar } from "../ui/progress-bar";
 import { X, Heart } from "lucide-react";
@@ -32,6 +32,7 @@ export function LessonPlayer({
 }) {
   const router = useRouter();
   const userId = useUserId();
+  const t = useT();
   const [phase, setPhase] = React.useState<Phase>({ kind: "intro" });
   const [hearts, setHearts] = React.useState(MAX_HEARTS);
   const [score, setScore] = React.useState(0);
@@ -98,7 +99,7 @@ export function LessonPlayer({
           <button
             onClick={() => router.push(`/course/${courseId}`)}
             className="text-zinc-400 hover:text-zinc-700 transition-colors"
-            aria-label="Выйти из урока"
+            aria-label={t.exitLesson}
           >
             <X className="h-6 w-6" />
           </button>
@@ -117,7 +118,7 @@ export function LessonPlayer({
               <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-zinc-900 mb-6">{title}</h1>
               <ContentBlocks blocks={content.blocks} />
               <Button onClick={start} size="lg" className="w-full mt-8">
-                Перейти к упражнениям
+                {t.toExercises}
               </Button>
             </div>
           )}
@@ -125,7 +126,7 @@ export function LessonPlayer({
           {phase.kind === "exercise" && (
             <div key={phase.index} className="animate-slide-up">
               <p className="text-xs uppercase tracking-wider text-zinc-400 font-bold mb-4">
-                Упражнение {phase.index + 1} из {total}
+                {t.exerciseN(phase.index + 1, total)}
               </p>
               <ExerciseRenderer
                 exercise={content.exercises[phase.index]}

@@ -1,6 +1,7 @@
 "use client";
 import * as React from "react";
 import { Button } from "../ui/button";
+import { useT } from "../locale-provider";
 import { cn } from "@/lib/utils";
 import type { Exercise } from "@/lib/schemas";
 import { CheckCircle2, XCircle } from "lucide-react";
@@ -12,6 +13,7 @@ type Props = {
 };
 
 export function ExerciseTrueFalse({ exercise, answered, onAnswer }: Props) {
+  const t = useT();
   const [choice, setChoice] = React.useState<boolean | null>(null);
 
   function check() {
@@ -52,7 +54,7 @@ export function ExerciseTrueFalse({ exercise, answered, onAnswer }: Props) {
   return (
     <div>
       <p className="text-xs uppercase tracking-wider font-bold text-zinc-400 mb-3">
-        Правда или нет?
+        {t.trueFalsePrompt}
       </p>
       <div className="rounded-card bg-white border-2 border-zinc-200 p-6 sm:p-8 text-lg sm:text-xl leading-relaxed text-zinc-900 text-center font-medium">
         {exercise.statement}
@@ -60,7 +62,7 @@ export function ExerciseTrueFalse({ exercise, answered, onAnswer }: Props) {
 
       <div className="grid grid-cols-2 gap-3 mt-6">
         <ChoiceButton
-          label="Правда"
+          label={t.trueLabel}
           icon={<CheckCircle2 className="h-6 w-6" />}
           selected={choice === true}
           correct={isCorrectChoice(true)}
@@ -69,7 +71,7 @@ export function ExerciseTrueFalse({ exercise, answered, onAnswer }: Props) {
           onClick={() => setChoice(true)}
         />
         <ChoiceButton
-          label="Неправда"
+          label={t.falseLabel}
           icon={<XCircle className="h-6 w-6" />}
           selected={choice === false}
           correct={isCorrectChoice(false)}
@@ -86,7 +88,7 @@ export function ExerciseTrueFalse({ exercise, answered, onAnswer }: Props) {
           size="lg"
           className="w-full mt-8"
         >
-          Проверить
+          {t.check}
         </Button>
       )}
     </div>
