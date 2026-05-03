@@ -97,7 +97,15 @@ function LessonNode({
   const isDone = state === "completed";
 
   return (
-    <div className="relative flex justify-center min-h-[5rem]" ref={ref}>
+    <div
+      className={cn(
+        "relative flex justify-center min-h-[5rem]",
+        // When popup is open, lift this entire node above subsequent siblings.
+        // Without this, later locked nodes paint on top of the popup card.
+        open && "z-40",
+      )}
+      ref={ref}
+    >
       <div style={{ transform: `translateX(${offsetX}px)` }} className="relative flex flex-col items-center">
         <button
           type="button"
