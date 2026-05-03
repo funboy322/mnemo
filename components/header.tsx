@@ -1,12 +1,14 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useUserId } from "./user-provider";
+import { useUserContext } from "./user-provider";
 import { useT, useLocale, useSetLocale } from "./locale-provider";
 import * as React from "react";
-import { Flame, Zap, Target, Globe, Check } from "lucide-react";
+import { Flame, Zap, Target, Globe, Check, LogIn } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SUPPORTED_LOCALES, LOCALE_LABELS, LOCALE_FLAGS } from "@/lib/i18n";
+import { SignInButton, UserButton, useUser } from "@clerk/nextjs";
+import { isClerkEnabled } from "@/lib/auth-config";
 
 type Stats = {
   totalXp: number;
@@ -16,7 +18,7 @@ type Stats = {
 type MeData = { stats: Stats; dailyGoalMet: boolean };
 
 export function Header() {
-  const userId = useUserId();
+  const { userId, isAuthed, pendingGuestId, clearPendingGuestId } = useUserContext();
   const pathname = usePathname();
   const t = useT();
   const [data, setData] = React.useState<MeData | null>(null);
@@ -40,7 +42,37 @@ export function Header() {
     };
   }, [userId]);
 
-  // Hide global header inside lesson player
+  // First sign-in: migrate guest data into authed userId, then refetch stats
+  const migrating = React.useRef(false);
+  React.useEffect(() => {
+    if (!isAuthed || !userId || !pendingGuestId || migrating.current) return;
+    if (pendingGuestId === userId) {
+      // Already-merged or not actually a guest; just clear
+      clearPendingGuestId();
+      return;
+    }
+    migrating.current = true;
+    fetch("/api/migrate", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ fromUserId: pendingGuestId, toUserId: userId }),
+    })
+      .then((r) => r.json())
+      .then(() => {
+        clearPendingGuestId();
+        // Refresh stats with newly migrated data
+        return fetch(`/api/me?userId=${userId}`).then((r) => r.json());
+      })
+      .then((d) => {
+        if (d?.stats) setData(d);
+      })
+      .catch(() => {})
+      .finally(() => {
+        migrating.current = false;
+      });
+  }, [isAuthed, userId, pendingGuestId, clearPendingGuestId]);
+
+  // Hide header inside lesson player
   if (pathname && /^\/course\/[^/]+\/lesson\//.test(pathname)) {
     return null;
   }
@@ -78,12 +110,31 @@ export function Header() {
             </>
           )}
           <LanguageSwitcher />
-          <Link href="/dashboard" className="hidden sm:inline-block text-zinc-500 hover:text-zinc-900">
-            {t.myCourses}
-          </Link>
+          {isClerkEnabled() && <ClerkAuthControls isAuthed={isAuthed} t={t} />}
         </div>
       </div>
     </header>
+  );
+}
+
+function ClerkAuthControls({ isAuthed, t }: { isAuthed: boolean; t: ReturnType<typeof useT> }) {
+  const { isLoaded } = useUser();
+  if (!isLoaded) return null;
+  if (isAuthed) {
+    return <UserButton appearance={{ elements: { avatarBox: "h-8 w-8" } }} />;
+  }
+  return (
+    <SignInButton mode="modal">
+      <button
+        type="button"
+        className="inline-flex items-center justify-center sm:gap-1.5 h-9 sm:px-3 w-9 sm:w-auto rounded-xl bg-brand-500 text-white font-bold text-sm hover:bg-brand-600 transition-colors btn-3d btn-3d-brand"
+        title={t.saveProgress}
+        aria-label={t.signIn}
+      >
+        <LogIn className="h-4 w-4" />
+        <span className="hidden sm:inline">{t.signIn}</span>
+      </button>
+    </SignInButton>
   );
 }
 

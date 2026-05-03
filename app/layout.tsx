@@ -1,10 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 import { UserProvider } from "@/components/user-provider";
 import { LocaleProvider } from "@/components/locale-provider";
 import { Header } from "@/components/header";
 import { getServerLocale, getDict } from "@/lib/i18n";
+import { isClerkEnabled } from "@/lib/auth-config";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -55,7 +57,7 @@ export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const locale = await getServerLocale();
-  return (
+  const tree = (
     <html
       lang={locale}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
@@ -69,5 +71,22 @@ export default async function RootLayout({
         </LocaleProvider>
       </body>
     </html>
+  );
+
+  // Only mount ClerkProvider when configured. Without keys, Clerk hooks
+  // gracefully return null/false and the app runs in guest-only mode.
+  if (!isClerkEnabled()) return tree;
+
+  return (
+    <ClerkProvider
+      appearance={{
+        variables: {
+          colorPrimary: "#12b76a",
+          borderRadius: "0.75rem",
+        },
+      }}
+    >
+      {tree}
+    </ClerkProvider>
   );
 }

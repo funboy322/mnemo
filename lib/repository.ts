@@ -183,3 +183,43 @@ export function getUserStats(userId: string) {
     lastActivityDate: null,
   };
 }
+
+/**
+ * Merge a guest user's data into an authenticated user. Called on first sign-in.
+ *
+ * Strategy: re-assign rows in courses + progress to the new userId.
+ * For user_stats, sum the totals (XP, streak max). Idempotent — running twice
+ * just re-points already-pointed rows.
+ */
+export function migrateUserData(fromUserId: string, toUserId: string): { migrated: number } {
+  if (fromUserId === toUserId) return { migrated: 0 };
+
+  // Re-assign all rows
+  const courseUpdate = db.update(courses).set({ userId: toUserId }).where(eq(courses.userId, fromUserId)).run();
+  const progressUpdate = db.update(progress).set({ userId: toUserId }).where(eq(progress.userId, fromUserId)).run();
+
+  // Merge user_stats: take max of XP and streak fields
+  const fromStats = db.select().from(userStats).where(eq(userStats.userId, fromUserId)).get();
+  if (fromStats) {
+    const toStats = db.select().from(userStats).where(eq(userStats.userId, toUserId)).get();
+    if (toStats) {
+      db.update(userStats)
+        .set({
+          totalXp: toStats.totalXp + fromStats.totalXp,
+          currentStreak: Math.max(toStats.currentStreak, fromStats.currentStreak),
+          longestStreak: Math.max(toStats.longestStreak, fromStats.longestStreak),
+          lastActivityDate: toStats.lastActivityDate ?? fromStats.lastActivityDate,
+        })
+        .where(eq(userStats.userId, toUserId))
+        .run();
+      db.delete(userStats).where(eq(userStats.userId, fromUserId)).run();
+    } else {
+      // Just re-assign the row
+      db.update(userStats).set({ userId: toUserId }).where(eq(userStats.userId, fromUserId)).run();
+    }
+  }
+
+  return {
+    migrated: (courseUpdate.changes ?? 0) + (progressUpdate.changes ?? 0),
+  };
+}

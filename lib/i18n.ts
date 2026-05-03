@@ -178,6 +178,14 @@ export type Dict = {
   // Encouragement (random phrase pools)
   correctPhrases: readonly string[];
   wrongPhrases: readonly string[];
+
+  // Auth
+  signIn: string;
+  signUp: string;
+  saveProgress: string;
+  guestModeBadge: string;
+  migratingProgress: string;
+  migrationDone: string;
 };
 
 const en: Dict = {
@@ -309,6 +317,13 @@ const en: Dict = {
 
   correctPhrases: ["Nice!", "Great!", "Spot on!", "Boom!", "Perfect!", "Sharp!", "Crushed it!", "On fire!"],
   wrongPhrases: ["Almost!", "Not quite", "Close one", "No worries", "Try once more"],
+
+  signIn: "Sign in",
+  signUp: "Sign up",
+  saveProgress: "Save your progress",
+  guestModeBadge: "Guest",
+  migratingProgress: "Saving your progress to your account...",
+  migrationDone: "Progress saved",
 };
 
 const ru: Dict = {
@@ -450,6 +465,13 @@ const ru: Dict = {
 
   correctPhrases: ["Точно!", "Огонь!", "Бомба!", "Великолепно!", "Молодец!", "В точку!", "Класс!", "Безошибочно!", "Так держать!"],
   wrongPhrases: ["Почти!", "Чуть-чуть", "Бывает!", "Не страшно", "Ещё разок"],
+
+  signIn: "Войти",
+  signUp: "Регистрация",
+  saveProgress: "Сохранить прогресс",
+  guestModeBadge: "Гость",
+  migratingProgress: "Сохраняем твой прогресс в аккаунт...",
+  migrationDone: "Прогресс сохранён",
 };
 
 const tr: Dict = {
@@ -581,6 +603,13 @@ const tr: Dict = {
 
   correctPhrases: ["Tam isabet!", "Harika!", "Bomba!", "Mükemmel!", "Süper!", "Aferin!", "Şahane!", "Tek hata yok!"],
   wrongPhrases: ["Az kaldı!", "Yaklaştın", "Olur böyle", "Önemli değil", "Bir kez daha"],
+
+  signIn: "Giriş",
+  signUp: "Kayıt",
+  saveProgress: "İlerlemeni kaydet",
+  guestModeBadge: "Misafir",
+  migratingProgress: "İlerlemen hesabına kaydediliyor...",
+  migrationDone: "İlerleme kaydedildi",
 };
 
 export const dicts: Record<Locale, Dict> = { en, ru, tr };
