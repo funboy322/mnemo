@@ -5,8 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
+    "start": "bash -c 'set -a; [ -f .env.local ] && source .env.local; set +a; next start'",
+    "lint": "eslint",
+    "seed:demo": "tsx scripts/seed-demo.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.74",
