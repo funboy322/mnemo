@@ -164,6 +164,20 @@ export type Dict = {
 
   // Loading
   loadingLabel: string;
+
+  // Tip panels (interstitial)
+  tipLabel: string;
+  gotIt: string;
+
+  // Out of hearts
+  outOfHeartsTitle: string;
+  outOfHeartsBody: string;
+  retryLesson: string;
+  backToCourse: string;
+
+  // Encouragement (random phrase pools)
+  correctPhrases: readonly string[];
+  wrongPhrases: readonly string[];
 };
 
 const en: Dict = {
@@ -284,6 +298,17 @@ const en: Dict = {
   retry: "Retry",
 
   loadingLabel: "Loading",
+
+  tipLabel: "Tip",
+  gotIt: "Got it",
+
+  outOfHeartsTitle: "Out of hearts",
+  outOfHeartsBody: "Take a break or try this lesson again from the start.",
+  retryLesson: "Try again",
+  backToCourse: "Back to course",
+
+  correctPhrases: ["Nice!", "Great!", "Spot on!", "Boom!", "Perfect!", "Sharp!", "Crushed it!", "On fire!"],
+  wrongPhrases: ["Almost!", "Not quite", "Close one", "No worries", "Try once more"],
 };
 
 const ru: Dict = {
@@ -414,6 +439,17 @@ const ru: Dict = {
   retry: "Повторить",
 
   loadingLabel: "Загружаем",
+
+  tipLabel: "Подсказка",
+  gotIt: "Понятно",
+
+  outOfHeartsTitle: "Жизни кончились",
+  outOfHeartsBody: "Сделай паузу или начни этот урок заново.",
+  retryLesson: "Попробовать снова",
+  backToCourse: "К курсу",
+
+  correctPhrases: ["Точно!", "Огонь!", "Бомба!", "Великолепно!", "Молодец!", "В точку!", "Класс!", "Безошибочно!", "Так держать!"],
+  wrongPhrases: ["Почти!", "Чуть-чуть", "Бывает!", "Не страшно", "Ещё разок"],
 };
 
 const tr: Dict = {
@@ -534,6 +570,17 @@ const tr: Dict = {
   retry: "Tekrar",
 
   loadingLabel: "Yükleniyor",
+
+  tipLabel: "İpucu",
+  gotIt: "Anladım",
+
+  outOfHeartsTitle: "Kalpler bitti",
+  outOfHeartsBody: "Mola ver ya da bu derse baştan başla.",
+  retryLesson: "Tekrar dene",
+  backToCourse: "Kursa dön",
+
+  correctPhrases: ["Tam isabet!", "Harika!", "Bomba!", "Mükemmel!", "Süper!", "Aferin!", "Şahane!", "Tek hata yok!"],
+  wrongPhrases: ["Az kaldı!", "Yaklaştın", "Olur böyle", "Önemli değil", "Bir kez daha"],
 };
 
 export const dicts: Record<Locale, Dict> = { en, ru, tr };

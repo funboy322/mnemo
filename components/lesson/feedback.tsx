@@ -7,6 +7,10 @@ import type { Exercise } from "@/lib/schemas";
 import type { Dict } from "@/lib/i18n";
 import { CheckCircle2, XCircle } from "lucide-react";
 
+function pickRandom<T>(arr: readonly T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
 export function Feedback({
   correct,
   exercise,
@@ -19,7 +23,13 @@ export function Feedback({
   const t = useT();
   const explanation = getExplanation(exercise);
 
-  // Enter advances to next exercise
+  // Lock the random phrase for the lifetime of this feedback (don't reroll on rerender)
+  const phrase = React.useMemo(
+    () => (correct ? pickRandom(t.correctPhrases) : pickRandom(t.wrongPhrases)),
+    [correct, t.correctPhrases, t.wrongPhrases],
+  );
+
+  // Enter / Space advances
   React.useEffect(() => {
     function onKey(e: KeyboardEvent) {
       const target = e.target as HTMLElement | null;
@@ -41,16 +51,16 @@ export function Feedback({
       )}
     >
       <div className="max-w-2xl mx-auto flex items-start gap-4">
-        <div className="hidden sm:block">
+        <div className="hidden sm:flex shrink-0">
           {correct ? (
-            <CheckCircle2 className="h-12 w-12 text-brand-600" />
+            <CheckCircle2 className="h-12 w-12 text-brand-600 animate-pop" />
           ) : (
-            <XCircle className="h-12 w-12 text-red-600" />
+            <XCircle className="h-12 w-12 text-red-600 animate-pop" />
           )}
         </div>
-        <div className="flex-1">
-          <h3 className={cn("text-xl font-black", correct ? "text-brand-700" : "text-red-700")}>
-            {correct ? t.correct : t.incorrect}
+        <div className="flex-1 min-w-0">
+          <h3 className={cn("text-xl sm:text-2xl font-black", correct ? "text-brand-700" : "text-red-700")}>
+            {phrase}
           </h3>
           {!correct && <CorrectAnswer exercise={exercise} t={t} />}
           {explanation && (
