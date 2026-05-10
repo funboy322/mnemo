@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 import { UserProvider } from "@/components/user-provider";
@@ -7,16 +6,6 @@ import { LocaleProvider } from "@/components/locale-provider";
 import { Header } from "@/components/header";
 import { getServerLocale, getDict } from "@/lib/i18n";
 import { isClerkEnabled } from "@/lib/auth-config";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin", "cyrillic", "latin-ext"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getServerLocale();
@@ -58,10 +47,7 @@ export default async function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   const locale = await getServerLocale();
   const tree = (
-    <html
-      lang={locale}
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
+    <html lang={locale} className="h-full antialiased">
       <body className="min-h-full flex flex-col font-display bg-zinc-50 text-zinc-900">
         <LocaleProvider initialLocale={locale}>
           <UserProvider>
