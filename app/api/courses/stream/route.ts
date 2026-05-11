@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
           ...outline,
           lessons: outline.lessons.slice(0, parsed.data.depth),
         };
-        const { courseId } = createCourse({ userId, input: parsed.data, outline: finalOutline });
+        const { courseId } = await createCourse({ userId, input: parsed.data, outline: finalOutline });
         send({ done: true, courseId });
       } catch (err) {
         const message = err instanceof Error ? err.message : "Generation failed";

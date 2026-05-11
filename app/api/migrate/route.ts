@@ -44,6 +44,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "fromUserId must be a guest id, not a Clerk user id" }, { status: 400 });
   }
 
-  const result = migrateUserData(parsed.data.fromUserId, parsed.data.toUserId);
+  const result = await migrateUserData(parsed.data.fromUserId, parsed.data.toUserId);
   return NextResponse.json(result);
 }

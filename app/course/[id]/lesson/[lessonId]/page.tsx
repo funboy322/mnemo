@@ -10,7 +10,7 @@ export async function generateMetadata({
   params: Promise<{ id: string; lessonId: string }>;
 }): Promise<Metadata> {
   const { lessonId } = await params;
-  const lesson = getLesson(lessonId);
+  const lesson = await getLesson(lessonId);
   if (!lesson) return { title: "Урок не найден" };
   return {
     title: lesson.title,
@@ -24,8 +24,7 @@ export default async function LessonPage({
   params: Promise<{ id: string; lessonId: string }>;
 }) {
   const { id: courseId, lessonId } = await params;
-  const course = getCourse(courseId);
-  const lesson = getLesson(lessonId);
+  const [course, lesson] = await Promise.all([getCourse(courseId), getLesson(lessonId)]);
   if (!course || !lesson) notFound();
 
   return (

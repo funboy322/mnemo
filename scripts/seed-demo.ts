@@ -201,18 +201,16 @@ async function main() {
   console.log(`🌱 Seeding demo course for user: ${userId}`);
 
   // Idempotent: clear existing demo courses for this user
-  const existing = db.select().from(courses)
-    .where(eq(courses.userId, userId))
-    .all()
-    .filter((c) => c.title === outline.title);
+  const userRows = await db.select().from(courses).where(eq(courses.userId, userId)).all();
+  const existing = userRows.filter((c) => c.title === outline.title);
 
   for (const c of existing) {
-    db.delete(courses).where(eq(courses.id, c.id)).run();
+    await db.delete(courses).where(eq(courses.id, c.id));
     console.log(`   🗑  Removed previous demo course ${c.id}`);
   }
 
   const courseId = generateId("c");
-  db.insert(courses).values({
+  await db.insert(courses).values({
     id: courseId,
     userId,
     topic: "Стоицизм для современной жизни",
@@ -223,18 +221,17 @@ async function main() {
     emoji: outline.emoji,
     outline,
     createdAt: new Date(),
-  }).run();
+  });
   console.log(`   ✅ Course ${courseId}`);
 
-  outline.lessons.forEach((lesson, i) => {
+  for (let i = 0; i < outline.lessons.length; i++) {
+    const lesson = outline.lessons[i];
     const lessonId = generateId("l");
-    // Pre-fill content for lesson 1 and lesson 5 — the others will lazy-generate (but
-    // will fail without API key, that's ok — user can play 1 and 5 to see the full UX).
     let content: LessonContent | null = null;
     if (i === 0) content = lesson1Content;
     if (i === 4) content = lesson5Content;
 
-    db.insert(lessons).values({
+    await db.insert(lessons).values({
       id: lessonId,
       courseId,
       position: i,
@@ -243,9 +240,9 @@ async function main() {
       objectives: lesson.objectives,
       content,
       generatedAt: content ? new Date() : null,
-    }).run();
+    });
     console.log(`   ✅ Lesson ${i + 1}: ${lesson.title}${content ? " (with content)" : " (outline only)"}`);
-  });
+  }
 
   console.log("");
   console.log(`📋 Чтобы увидеть демо в браузере:`);

@@ -12,9 +12,11 @@ export async function GET(req: NextRequest) {
   const userId = req.nextUrl.searchParams.get("userId") ?? "";
   if (!userId) return NextResponse.json({ error: "userId required" }, { status: 400 });
 
-  const stats = getUserStats(userId);
-  const courses = listUserCoursesWithProgress(userId);
-  const dailyGoalMet = hasActivityToday(userId);
-  const reviewDueCount = countLessonsDueForReview(userId);
+  const [stats, courses, dailyGoalMet, reviewDueCount] = await Promise.all([
+    getUserStats(userId),
+    listUserCoursesWithProgress(userId),
+    hasActivityToday(userId),
+    countLessonsDueForReview(userId),
+  ]);
   return NextResponse.json({ stats, courses, dailyGoalMet, reviewDueCount });
 }

@@ -18,10 +18,10 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     return NextResponse.json({ error: "Invalid input" }, { status: 400 });
   }
 
-  const lesson = getLesson(id);
+  const lesson = await getLesson(id);
   if (!lesson) return NextResponse.json({ error: "Lesson not found" }, { status: 404 });
 
-  const result = recordLessonComplete({
+  const result = await recordLessonComplete({
     userId: parsed.data.userId,
     courseId: lesson.courseId,
     lessonId: id,

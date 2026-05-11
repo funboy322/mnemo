@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const outline = await generateCourseOutline(parsed.data);
-    const { courseId } = createCourse({ userId, input: parsed.data, outline });
+    const { courseId } = await createCourse({ userId, input: parsed.data, outline });
     return NextResponse.json({ courseId });
   } catch (err) {
     console.error("Course generation failed:", err);

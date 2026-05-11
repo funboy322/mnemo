@@ -6,10 +6,10 @@ export const runtime = "nodejs";
 export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
   const userId = req.nextUrl.searchParams.get("userId") ?? "";
-  const data = getCourse(id);
+  const data = await getCourse(id);
   if (!data) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const completed = userId ? getCompletedLessonIds(userId, id) : new Set<string>();
+  const completed = userId ? await getCompletedLessonIds(userId, id) : new Set<string>();
   return NextResponse.json({
     course: data.course,
     lessons: data.lessons.map((l) => ({

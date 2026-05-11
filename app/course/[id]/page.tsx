@@ -13,7 +13,7 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const data = getCourse(id);
+  const data = await getCourse(id);
   if (!data) return { title: "Not found" };
   return {
     title: data.course.title,
@@ -24,7 +24,7 @@ export async function generateMetadata({
 
 export default async function CoursePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const data = getCourse(id);
+  const data = await getCourse(id);
   if (!data) notFound();
   const t = await getServerT();
 
