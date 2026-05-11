@@ -5,7 +5,9 @@
  * Run: npx tsx scripts/seed-demo.ts [optional-userId]
  *
  * If userId omitted, uses "u_demo". Open localhost:3000 with that user
- * by setting localStorage.curio.userId = "u_demo" in browser DevTools,
+ * by setting localStorage["curio.userId"] = "u_demo" in browser DevTools,
+ * (the key is `curio.userId` — kept from the project's previous name for
+ * backward compatibility with existing localStorage data),
  * then visit /dashboard.
  */
 import { db } from "../lib/db";

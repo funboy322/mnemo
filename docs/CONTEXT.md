@@ -1,4 +1,4 @@
-# Curio — Domain Context
+# Mnemo — Domain Context
 
 > Read this first. The vocabulary in this document is the project vocabulary —
 > use these words in code, commits, and discussions.

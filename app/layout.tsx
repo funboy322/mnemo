@@ -10,20 +10,20 @@ import { isClerkEnabled } from "@/lib/auth-config";
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getServerLocale();
   const t = getDict(locale);
-  const TITLE = `Curio — ${t.heroLine1.replace(/\.$/, "").toLowerCase()}`;
+  const TITLE = `Mnemo — ${t.heroLine1.replace(/\.$/, "").toLowerCase()}`;
   const DESCRIPTION = t.heroSub;
   return {
-    title: { default: TITLE, template: "%s · Curio" },
+    title: { default: TITLE, template: "%s · Mnemo" },
     description: DESCRIPTION,
-    applicationName: "Curio",
-    authors: [{ name: "Curio" }],
+    applicationName: "Mnemo",
+    authors: [{ name: "Mnemo" }],
     keywords: ["learning", "AI", "courses", "duolingo", "education", "обучение", "öğrenme"],
     openGraph: {
       type: "website",
       locale: locale === "ru" ? "ru_RU" : locale === "tr" ? "tr_TR" : "en_US",
       title: TITLE,
       description: DESCRIPTION,
-      siteName: "Curio",
+      siteName: "Mnemo",
     },
     twitter: {
       card: "summary_large_image",

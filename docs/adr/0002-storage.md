@@ -45,7 +45,7 @@ Store course/lesson data as JSON blobs.
 ## Migration steps (when ready)
 
 1. `npm install @libsql/client`
-2. Create Turso DB: `turso db create curio` (or use Vercel integration)
+2. Create Turso DB: `turso db create mnemo` (or use Vercel integration)
 3. Get URL + token, add to Vercel env: `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`
 4. Replace `lib/db.ts` body:
    ```ts

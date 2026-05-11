@@ -2,9 +2,9 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Curio — учись чему угодно",
-    short_name: "Curio",
-    description: "Превратит любую тему в персональный курс с упражнениями. Как Duolingo, только для всего.",
+    name: "Mnemo — learn anything",
+    short_name: "Mnemo",
+    description: "Turn any topic into a personal course of bite-size lessons. Like Duolingo, for everything.",
     start_url: "/",
     display: "standalone",
     background_color: "#fafafa",

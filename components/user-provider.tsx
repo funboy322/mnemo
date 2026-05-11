@@ -23,6 +23,9 @@ const UserCtx = React.createContext<Ctx>({
   clearPendingGuestId: () => {},
 });
 
+// Keys retain the `curio.*` namespace from the project's previous name —
+// renaming would orphan existing localStorage data and reset every user.
+// New keys go under `mnemo.*` going forward.
 const GUEST_KEY = "curio.userId";
 const PENDING_MIGRATE_KEY = "curio.pendingMigrate";
 

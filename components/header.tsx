@@ -84,7 +84,7 @@ export function Header() {
           <span className="inline-flex items-center justify-center h-9 w-9 rounded-2xl bg-brand-500 text-white text-lg">
             ✦
           </span>
-          <span className="text-zinc-900">curio</span>
+          <span className="text-zinc-900">mnemo</span>
         </Link>
         <div className="flex items-center gap-3 sm:gap-4 text-sm font-bold">
           {data?.stats && (
