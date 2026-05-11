@@ -185,6 +185,103 @@ export function getUserStats(userId: string) {
 }
 
 /**
+ * Returns exercises pooled from lessons the user has completed at least
+ * `minHoursAgo` ago. Useful for spaced-repetition "daily review" sessions.
+ * Each exercise carries its source lessonId + title so the UI can show
+ * "from lesson X" attribution.
+ */
+export function getReviewExercises(
+  userId: string,
+  limit: number,
+  minHoursAgo: number = 1,
+): Array<{
+  exercise: import("./schemas").Exercise;
+  lessonId: string;
+  lessonTitle: string;
+  courseId: string;
+}> {
+  const cutoff = new Date(Date.now() - minHoursAgo * 60 * 60 * 1000);
+
+  // Distinct lesson_ids the user has completed before the cutoff
+  const completed = db
+    .selectDistinct({ lessonId: progress.lessonId })
+    .from(progress)
+    .where(and(eq(progress.userId, userId)))
+    .all();
+
+  if (completed.length === 0) return [];
+
+  const lessonIds = completed.map((r) => r.lessonId);
+  // Fetch lessons with content
+  const lessonRows = lessonIds
+    .map((id) => db.select().from(lessons).where(eq(lessons.id, id)).get())
+    .filter((l): l is NonNullable<typeof l> => l !== undefined && l.content !== null);
+
+  // Filter to lessons where MOST RECENT completion is older than cutoff
+  const eligibleLessons = lessonRows.filter((l) => {
+    const latest = db
+      .select({ completedAt: progress.completedAt })
+      .from(progress)
+      .where(and(eq(progress.userId, userId), eq(progress.lessonId, l.id)))
+      .orderBy(desc(progress.completedAt))
+      .get();
+    if (!latest) return false;
+    return latest.completedAt.getTime() <= cutoff.getTime();
+  });
+
+  // Pool all exercises, shuffle, take limit
+  type Item = { exercise: import("./schemas").Exercise; lessonId: string; lessonTitle: string; courseId: string };
+  const pool: Item[] = [];
+  for (const lesson of eligibleLessons) {
+    const content = lesson.content as { exercises?: import("./schemas").Exercise[] } | null;
+    if (!content?.exercises) continue;
+    for (const ex of content.exercises) {
+      pool.push({ exercise: ex, lessonId: lesson.id, lessonTitle: lesson.title, courseId: lesson.courseId });
+    }
+  }
+  // Fisher-Yates shuffle, deterministic-ish via Math.random
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  return pool.slice(0, limit);
+}
+
+/** Count how many lessons are "due" for review (completed >= 1h ago). */
+export function countLessonsDueForReview(userId: string): number {
+  const cutoff = new Date(Date.now() - 60 * 60 * 1000); // 1h ago
+
+  const completed = db
+    .selectDistinct({ lessonId: progress.lessonId })
+    .from(progress)
+    .where(eq(progress.userId, userId))
+    .all();
+
+  let count = 0;
+  for (const { lessonId } of completed) {
+    const latest = db
+      .select({ completedAt: progress.completedAt })
+      .from(progress)
+      .where(and(eq(progress.userId, userId), eq(progress.lessonId, lessonId)))
+      .orderBy(desc(progress.completedAt))
+      .get();
+    if (latest && latest.completedAt.getTime() <= cutoff.getTime()) count++;
+  }
+  return count;
+}
+
+export function recordReviewSession(
+  userId: string,
+  score: number,
+  totalExercises: number,
+): { xpEarned: number } {
+  // Review pays more XP than a normal lesson because retention matters
+  const xpEarned = Math.round((score / Math.max(totalExercises, 1)) * 15) + 5;
+  bumpUserStats(userId, xpEarned);
+  return { xpEarned };
+}
+
+/**
  * Merge a guest user's data into an authenticated user. Called on first sign-in.
  *
  * Strategy: re-assign rows in courses + progress to the new userId.

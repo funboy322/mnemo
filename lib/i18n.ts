@@ -211,6 +211,15 @@ export type Dict = {
   onboardGoalSerious: string;
   onboardGoalSeriousDesc: string;
   onboardMinPerDay: (n: number) => string;
+
+  // Review mode
+  reviewTitle: string;
+  reviewSubtitle: string;
+  reviewStart: string;
+  reviewDueCount: (n: number) => string;
+  reviewNoneYet: string;
+  reviewSourceLesson: string;
+  reviewEmpty: string;
 };
 
 const en: Dict = {
@@ -373,6 +382,14 @@ const en: Dict = {
   onboardGoalSerious: "Serious",
   onboardGoalSeriousDesc: "5 lessons per day",
   onboardMinPerDay: (n) => `~${n} min/day`,
+
+  reviewTitle: "Daily review",
+  reviewSubtitle: "Strengthen what you already learned. 5 exercises from past lessons.",
+  reviewStart: "Start review",
+  reviewDueCount: (n) => `${n} ${n === 1 ? "lesson" : "lessons"} due`,
+  reviewNoneYet: "Complete a lesson first to unlock review mode.",
+  reviewSourceLesson: "From",
+  reviewEmpty: "Nothing to review yet — come back after you've completed some lessons.",
 };
 
 const ru: Dict = {
@@ -545,6 +562,19 @@ const ru: Dict = {
   onboardGoalSerious: "Серьёзно",
   onboardGoalSeriousDesc: "5 уроков в день",
   onboardMinPerDay: (n) => `~${n} мин/день`,
+
+  reviewTitle: "Повторение",
+  reviewSubtitle: "Закрепи пройденное. 5 упражнений из прошлых уроков.",
+  reviewStart: "Начать повторение",
+  reviewDueCount: (n) => {
+    const m10 = n % 10, m100 = n % 100;
+    if (m10 === 1 && m100 !== 11) return `${n} урок готов к повторению`;
+    if (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20)) return `${n} урока готовы к повторению`;
+    return `${n} уроков готовы к повторению`;
+  },
+  reviewNoneYet: "Пройди хотя бы один урок, чтобы открыть режим повторения.",
+  reviewSourceLesson: "Из урока",
+  reviewEmpty: "Пока нечего повторять. Возвращайся когда пройдёшь несколько уроков.",
 };
 
 const tr: Dict = {
@@ -707,6 +737,14 @@ const tr: Dict = {
   onboardGoalSerious: "Ciddi",
   onboardGoalSeriousDesc: "Günde 5 ders",
   onboardMinPerDay: (n) => `~${n} dk/gün`,
+
+  reviewTitle: "Tekrar",
+  reviewSubtitle: "Öğrendiğini pekiştir. Geçmiş derslerden 5 alıştırma.",
+  reviewStart: "Tekrara başla",
+  reviewDueCount: (n) => `${n} ders tekrara hazır`,
+  reviewNoneYet: "Tekrar modunu açmak için önce bir ders bitir.",
+  reviewSourceLesson: "Kaynak",
+  reviewEmpty: "Henüz tekrar edecek bir şey yok — birkaç ders bitirdikten sonra dön.",
 };
 
 export const dicts: Record<Locale, Dict> = { en, ru, tr };

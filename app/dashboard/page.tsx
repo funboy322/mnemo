@@ -5,7 +5,7 @@ import { useUserId } from "@/components/user-provider";
 import { useT } from "@/components/locale-provider";
 import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/ui/progress-bar";
-import { Flame, Zap, Trophy, Plus, Target, Check } from "lucide-react";
+import { Flame, Zap, Trophy, Plus, Target, Check, Sparkles } from "lucide-react";
 import { labelLevelKey } from "@/lib/utils";
 import type { Dict } from "@/lib/i18n";
 
@@ -22,7 +22,7 @@ type CourseRow = {
   progressPct: number;
 };
 type Stats = { totalXp: number; currentStreak: number; longestStreak: number };
-type MeData = { stats: Stats; courses: CourseRow[]; dailyGoalMet: boolean };
+type MeData = { stats: Stats; courses: CourseRow[]; dailyGoalMet: boolean; reviewDueCount: number };
 
 export default function DashboardPage() {
   const userId = useUserId();
@@ -52,8 +52,9 @@ export default function DashboardPage() {
     );
   }
 
-  const { stats, courses, dailyGoalMet } = data;
+  const { stats, courses, dailyGoalMet, reviewDueCount } = data;
   const completedCourses = courses.filter((c) => c.progressPct === 100).length;
+  const showReview = reviewDueCount > 0;
 
   return (
     <div className="px-4 sm:px-6 py-8 sm:py-12 max-w-3xl mx-auto w-full">
@@ -111,6 +112,26 @@ export default function DashboardPage() {
           </p>
         </div>
       </div>
+
+      {/* Review card — only when there's something due */}
+      {showReview && (
+        <Link
+          href="/review"
+          className="reveal mt-4 block rounded-card bg-gradient-to-br from-amber-400 to-orange-500 text-white p-5 sm:p-6 flex items-center gap-4 hover:from-amber-500 hover:to-orange-600 transition-all relative overflow-hidden group"
+          style={{ animationDelay: "150ms" }}
+        >
+          <div className="h-12 w-12 rounded-2xl bg-white/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+            <Sparkles className="h-6 w-6 fill-current" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-black text-lg">{t.reviewTitle}</p>
+            <p className="text-sm text-white/90 mt-0.5">
+              {t.reviewDueCount(reviewDueCount)}
+            </p>
+          </div>
+          <span className="text-2xl shrink-0">→</span>
+        </Link>
+      )}
 
       {/* Courses */}
       <div

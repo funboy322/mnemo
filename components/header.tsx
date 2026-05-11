@@ -72,8 +72,8 @@ export function Header() {
       });
   }, [isAuthed, userId, pendingGuestId, clearPendingGuestId]);
 
-  // Hide header inside lesson player
-  if (pathname && /^\/course\/[^/]+\/lesson\//.test(pathname)) {
+  // Hide header inside lesson and review players (they have their own minimal chrome)
+  if (pathname && (/^\/course\/[^/]+\/lesson\//.test(pathname) || pathname === "/review")) {
     return null;
   }
 

@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getUserStats, listUserCoursesWithProgress, hasActivityToday } from "@/lib/repository";
+import {
+  getUserStats,
+  listUserCoursesWithProgress,
+  hasActivityToday,
+  countLessonsDueForReview,
+} from "@/lib/repository";
 
 export const runtime = "nodejs";
 
@@ -10,5 +15,6 @@ export async function GET(req: NextRequest) {
   const stats = getUserStats(userId);
   const courses = listUserCoursesWithProgress(userId);
   const dailyGoalMet = hasActivityToday(userId);
-  return NextResponse.json({ stats, courses, dailyGoalMet });
+  const reviewDueCount = countLessonsDueForReview(userId);
+  return NextResponse.json({ stats, courses, dailyGoalMet, reviewDueCount });
 }
