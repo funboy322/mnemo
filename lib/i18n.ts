@@ -186,6 +186,31 @@ export type Dict = {
   guestModeBadge: string;
   migratingProgress: string;
   migrationDone: string;
+
+  // Onboarding
+  onboardStep: (n: number, total: number) => string;
+  onboardSkip: string;
+  onboardBack: string;
+  onboardContinue: string;
+  onboardStart: string;
+  onboardTopicTitle: string;
+  onboardTopicSub: string;
+  onboardWhyTitle: string;
+  onboardWhySub: string;
+  onboardWhyCurious: string;
+  onboardWhyWork: string;
+  onboardWhyGrowth: string;
+  onboardWhyExam: string;
+  onboardWhyFun: string;
+  onboardGoalTitle: string;
+  onboardGoalSub: string;
+  onboardGoalCasual: string;
+  onboardGoalCasualDesc: string;
+  onboardGoalRegular: string;
+  onboardGoalRegularDesc: string;
+  onboardGoalSerious: string;
+  onboardGoalSeriousDesc: string;
+  onboardMinPerDay: (n: number) => string;
 };
 
 const en: Dict = {
@@ -324,6 +349,30 @@ const en: Dict = {
   guestModeBadge: "Guest",
   migratingProgress: "Saving your progress to your account...",
   migrationDone: "Progress saved",
+
+  onboardStep: (n, total) => `Step ${n} of ${total}`,
+  onboardSkip: "Skip",
+  onboardBack: "Back",
+  onboardContinue: "Continue",
+  onboardStart: "Start learning",
+  onboardTopicTitle: "What do you want to learn?",
+  onboardTopicSub: "Any topic. Be specific — the more concrete, the better the course.",
+  onboardWhyTitle: "Why this topic?",
+  onboardWhySub: "We'll match the depth and tone to your reason.",
+  onboardWhyCurious: "Just curious",
+  onboardWhyWork: "For my work",
+  onboardWhyGrowth: "Personal growth",
+  onboardWhyExam: "School or exam",
+  onboardWhyFun: "Pure fun",
+  onboardGoalTitle: "How serious are you?",
+  onboardGoalSub: "Pick a daily target. You can always change it later.",
+  onboardGoalCasual: "Casual",
+  onboardGoalCasualDesc: "1 lesson per day",
+  onboardGoalRegular: "Regular",
+  onboardGoalRegularDesc: "3 lessons per day",
+  onboardGoalSerious: "Serious",
+  onboardGoalSeriousDesc: "5 lessons per day",
+  onboardMinPerDay: (n) => `~${n} min/day`,
 };
 
 const ru: Dict = {
@@ -472,6 +521,30 @@ const ru: Dict = {
   guestModeBadge: "Гость",
   migratingProgress: "Сохраняем твой прогресс в аккаунт...",
   migrationDone: "Прогресс сохранён",
+
+  onboardStep: (n, total) => `Шаг ${n} из ${total}`,
+  onboardSkip: "Пропустить",
+  onboardBack: "Назад",
+  onboardContinue: "Дальше",
+  onboardStart: "Начать",
+  onboardTopicTitle: "Что хочешь изучить?",
+  onboardTopicSub: "Любая тема. Чем конкретнее, тем лучше получится курс.",
+  onboardWhyTitle: "Зачем тебе это?",
+  onboardWhySub: "Под цель подберём глубину и тон материала.",
+  onboardWhyCurious: "Просто интересно",
+  onboardWhyWork: "Для работы",
+  onboardWhyGrowth: "Личный рост",
+  onboardWhyExam: "Учёба, экзамен",
+  onboardWhyFun: "Развлечься",
+  onboardGoalTitle: "Насколько серьёзно?",
+  onboardGoalSub: "Выбери дневную цель. Поменять можно потом.",
+  onboardGoalCasual: "Без напряга",
+  onboardGoalCasualDesc: "1 урок в день",
+  onboardGoalRegular: "Регулярно",
+  onboardGoalRegularDesc: "3 урока в день",
+  onboardGoalSerious: "Серьёзно",
+  onboardGoalSeriousDesc: "5 уроков в день",
+  onboardMinPerDay: (n) => `~${n} мин/день`,
 };
 
 const tr: Dict = {
@@ -610,6 +683,30 @@ const tr: Dict = {
   guestModeBadge: "Misafir",
   migratingProgress: "İlerlemen hesabına kaydediliyor...",
   migrationDone: "İlerleme kaydedildi",
+
+  onboardStep: (n, total) => `Adım ${n} / ${total}`,
+  onboardSkip: "Atla",
+  onboardBack: "Geri",
+  onboardContinue: "Devam",
+  onboardStart: "Başla",
+  onboardTopicTitle: "Ne öğrenmek istersin?",
+  onboardTopicSub: "Herhangi bir konu. Ne kadar net olursa, kurs o kadar iyi olur.",
+  onboardWhyTitle: "Bu konuyu neden?",
+  onboardWhySub: "Nedenine göre derinliği ve tonu ayarlarız.",
+  onboardWhyCurious: "Sadece merak",
+  onboardWhyWork: "İşim için",
+  onboardWhyGrowth: "Kişisel gelişim",
+  onboardWhyExam: "Okul, sınav",
+  onboardWhyFun: "Eğlence",
+  onboardGoalTitle: "Ne kadar ciddi?",
+  onboardGoalSub: "Günlük hedef seç. Sonra değiştirebilirsin.",
+  onboardGoalCasual: "Rahat",
+  onboardGoalCasualDesc: "Günde 1 ders",
+  onboardGoalRegular: "Düzenli",
+  onboardGoalRegularDesc: "Günde 3 ders",
+  onboardGoalSerious: "Ciddi",
+  onboardGoalSeriousDesc: "Günde 5 ders",
+  onboardMinPerDay: (n) => `~${n} dk/gün`,
 };
 
 export const dicts: Record<Locale, Dict> = { en, ru, tr };

@@ -1,10 +1,12 @@
 import { TopicForm } from "@/components/topic-form";
+import { LandingGate } from "@/components/landing-gate";
 import { Sparkles, BookOpen, Brain } from "lucide-react";
 import { getServerT } from "@/lib/i18n";
 
 export default async function Home() {
   const t = await getServerT();
   return (
+    <LandingGate>
     <div className="flex flex-col flex-1">
       <section className="px-4 sm:px-6 pt-12 sm:pt-20 pb-16">
         <div className="max-w-3xl mx-auto text-center">
@@ -66,6 +68,7 @@ export default async function Home() {
         </div>
       </section>
     </div>
+    </LandingGate>
   );
 }
 
