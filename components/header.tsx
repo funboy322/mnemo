@@ -78,13 +78,18 @@ export function Header() {
   }
 
   return (
-    <header className="border-b-2 border-zinc-200 bg-white/80 backdrop-blur sticky top-0 z-30">
+    <header className="border-b border-zinc-200 bg-white/70 backdrop-blur-md sticky top-0 z-30">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 font-bold text-xl">
-          <span className="inline-flex items-center justify-center h-9 w-9 rounded-2xl bg-brand-500 text-white text-lg">
-            ✦
+        <Link href="/" className="flex items-center gap-2.5 group">
+          <span className="inline-flex items-center justify-center h-9 w-9 rounded-xl bg-brand-500 text-white font-serif italic font-semibold text-xl leading-none -mt-0.5 group-hover:bg-brand-600 transition-colors">
+            M
           </span>
-          <span className="text-zinc-900">mnemo</span>
+          <span
+            className="font-serif italic font-medium text-2xl tracking-tight"
+            style={{ color: "var(--color-ink)" }}
+          >
+            mnemo
+          </span>
         </Link>
         <div className="flex items-center gap-3 sm:gap-4 text-sm font-bold">
           {data?.stats && (
