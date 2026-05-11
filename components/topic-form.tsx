@@ -7,10 +7,13 @@ import { useUserId } from "./user-provider";
 import { useT, useLocale } from "./locale-provider";
 import { Loader2 } from "lucide-react";
 import { LOCALE_FLAGS, LOCALE_LABELS, SUPPORTED_LOCALES } from "@/lib/i18n";
-import type { Language } from "@/lib/schemas";
+import type { Language, CourseOutline } from "@/lib/schemas";
+import { StreamingPreview } from "./streaming-preview";
 
 const LEVELS = ["beginner", "intermediate", "advanced"] as const;
 const DEPTHS = [5, 8, 12] as const;
+
+type Partial<T> = { [P in keyof T]?: T[P] };
 
 export function TopicForm() {
   const router = useRouter();
@@ -22,10 +25,14 @@ export function TopicForm() {
   const [level, setLevel] = React.useState<typeof LEVELS[number]>("beginner");
   const [depth, setDepth] = React.useState<typeof DEPTHS[number]>(5);
   const [language, setLanguage] = React.useState<Language>(uiLocale);
-  const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
 
-  // Sync course language with UI locale changes (until user explicitly picks)
+  // Streaming state — when streaming, hide form and show preview
+  const [streaming, setStreaming] = React.useState(false);
+  const [partial, setPartial] = React.useState<Partial<CourseOutline> | null>(null);
+  const [done, setDone] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const [submittedTopic, setSubmittedTopic] = React.useState("");
+
   React.useEffect(() => {
     setLanguage(uiLocale);
   }, [uiLocale]);
@@ -51,9 +58,14 @@ export function TopicForm() {
       setError(t.errorTooShort);
       return;
     }
-    setLoading(true);
+
+    setStreaming(true);
+    setSubmittedTopic(topic.trim());
+    setPartial(null);
+    setDone(false);
+
     try {
-      const res = await fetch("/api/courses", {
+      const res = await fetch("/api/courses/stream", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
@@ -61,16 +73,91 @@ export function TopicForm() {
           input: { topic: topic.trim(), level, depth, language },
         }),
       });
-      const data = await res.json();
-      if (!res.ok || !data.courseId) {
-        // Prefer the specific `message` (e.g. "No AI credentials...") over generic `error` ("Generation failed")
-        throw new Error(data.message || data.error || t.errorGenerationFailed);
+
+      if (!res.ok || !res.body) {
+        const text = await res.text();
+        throw new Error(text || t.errorGenerationFailed);
       }
-      router.push(`/course/${data.courseId}`);
+
+      // Parse SSE: each `data: {...}\n\n` chunk
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let finalCourseId: string | null = null;
+
+      while (true) {
+        const { done: streamDone, value } = await reader.read();
+        if (streamDone) break;
+        buffer += decoder.decode(value, { stream: true });
+
+        // Process complete lines
+        let idx;
+        while ((idx = buffer.indexOf("\n\n")) !== -1) {
+          const line = buffer.slice(0, idx).trim();
+          buffer = buffer.slice(idx + 2);
+          if (!line.startsWith("data:")) continue;
+          try {
+            const json = JSON.parse(line.slice(5).trim()) as {
+              partial?: Partial<CourseOutline>;
+              done?: boolean;
+              courseId?: string;
+              error?: string;
+            };
+            if (json.error) {
+              throw new Error(json.error);
+            }
+            if (json.partial) {
+              setPartial(json.partial);
+            }
+            if (json.done && json.courseId) {
+              finalCourseId = json.courseId;
+              setDone(true);
+            }
+          } catch (parseErr) {
+            // Treat broken chunks as fatal
+            throw parseErr;
+          }
+        }
+      }
+
+      if (finalCourseId) {
+        // Brief moment to admire the completed preview, then navigate
+        setTimeout(() => router.push(`/course/${finalCourseId}`), 800);
+      }
     } catch (err) {
       setError((err as Error).message);
-      setLoading(false);
+      setStreaming(false);
     }
+  }
+
+  if (streaming) {
+    return (
+      <div className="space-y-4">
+        <StreamingPreview
+          topic={submittedTopic}
+          depth={depth}
+          partial={partial}
+          done={done}
+          error={error}
+        />
+        {error && (
+          <Button
+            type="button"
+            size="md"
+            variant="outline"
+            onClick={() => {
+              setStreaming(false);
+              setError(null);
+              setPartial(null);
+              setDone(false);
+            }}
+            className="w-full"
+          >
+            ← {t.retry}
+          </Button>
+        )}
+      </div>
+    );
   }
 
   return (
@@ -81,7 +168,6 @@ export function TopicForm() {
           onChange={(e) => setTopic(e.target.value)}
           placeholder={t.topicPlaceholder}
           className="border-0 h-14 text-lg px-2 focus:ring-0 focus:border-transparent"
-          disabled={loading}
         />
         <div className="mt-3 space-y-3">
           <SelectGroup
@@ -89,7 +175,6 @@ export function TopicForm() {
             value={level}
             options={LEVELS.map((v) => ({ value: v, label: levelLabels[v] }))}
             onChange={(v) => setLevel(v as typeof level)}
-            disabled={loading}
           />
           <div className="grid grid-cols-2 gap-3">
             <SelectGroup
@@ -97,7 +182,6 @@ export function TopicForm() {
               value={String(depth)}
               options={DEPTHS.map((d) => ({ value: String(d), label: depthLabels[d] }))}
               onChange={(v) => setDepth(Number(v) as typeof depth)}
-              disabled={loading}
             />
             <SelectGroup
               label={t.langLabel}
@@ -108,7 +192,6 @@ export function TopicForm() {
                 title: LOCALE_LABELS[lc],
               }))}
               onChange={(v) => setLanguage(v as Language)}
-              disabled={loading}
             />
           </div>
         </div>
@@ -118,40 +201,27 @@ export function TopicForm() {
         <div className="text-sm text-red-600 font-medium animate-shake">{error}</div>
       )}
 
-      <Button type="submit" size="lg" disabled={loading || !userId} className="w-full">
-        {loading ? (
-          <>
-            <Loader2 className="h-5 w-5 animate-spin" />
-            {t.generating}
-          </>
-        ) : (
-          t.createCourse
-        )}
+      <Button type="submit" size="lg" disabled={!userId} className="w-full">
+        {t.createCourse}
       </Button>
 
-      {loading && (
-        <p className="text-sm text-zinc-500 text-center animate-pulse">{t.generatingHint}</p>
-      )}
-
-      {!loading && (
-        <div className="pt-2">
-          <p className="text-xs uppercase tracking-wider text-zinc-400 font-bold mb-2 text-center">
-            {t.orPickIdea}
-          </p>
-          <div className="flex flex-wrap gap-2 justify-center">
-            {suggestions.map((s) => (
-              <button
-                key={s}
-                type="button"
-                onClick={() => setTopic(s)}
-                className="text-sm px-3 py-1.5 rounded-full bg-white border-2 border-zinc-200 text-zinc-700 hover:border-brand-300 hover:text-brand-700 transition-colors font-medium"
-              >
-                {s}
-              </button>
-            ))}
-          </div>
+      <div className="pt-2">
+        <p className="text-xs uppercase tracking-wider text-zinc-400 font-bold mb-2 text-center">
+          {t.orPickIdea}
+        </p>
+        <div className="flex flex-wrap gap-2 justify-center">
+          {suggestions.map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => setTopic(s)}
+              className="text-sm px-3 py-1.5 rounded-full bg-white border-2 border-zinc-200 text-zinc-700 hover:border-brand-300 hover:text-brand-700 transition-colors font-medium"
+            >
+              {s}
+            </button>
+          ))}
         </div>
-      )}
+      </div>
     </form>
   );
 }
