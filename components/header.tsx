@@ -80,14 +80,11 @@ export function Header() {
   return (
     <header className="border-b border-zinc-200 bg-white/70 backdrop-blur-md sticky top-0 z-30">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <span className="inline-flex items-center justify-center h-9 w-9 rounded-xl bg-brand-500 text-white font-serif italic font-semibold text-xl leading-none -mt-0.5 group-hover:bg-brand-600 transition-colors">
+        <Link href="/" className="flex items-center gap-2 group">
+          <span className="inline-flex items-center justify-center h-9 w-9 rounded-2xl bg-brand-500 text-white font-black text-lg leading-none group-hover:bg-brand-600 transition-colors">
             M
           </span>
-          <span
-            className="font-serif italic font-medium text-2xl tracking-tight"
-            style={{ color: "var(--color-ink)" }}
-          >
+          <span className="font-black text-xl tracking-tight text-zinc-900">
             mnemo
           </span>
         </Link>
