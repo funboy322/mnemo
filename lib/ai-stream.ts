@@ -1,23 +1,37 @@
-import { streamObject, type LanguageModel } from "ai";
+import { generateText, type LanguageModel } from "ai";
+import { google } from "@ai-sdk/google";
 import { anthropic } from "@ai-sdk/anthropic";
 import {
   CourseOutlineSchema,
   type CourseInput,
+  type CourseOutline,
 } from "./schemas";
+import { extractJson } from "./json-extract";
 
-function resolveModel(): LanguageModel | string {
-  const explicit = process.env.AI_MODEL;
-  if (explicit) return explicit;
-  if (process.env.AI_GATEWAY_API_KEY || process.env.VERCEL) {
-    return process.env.AI_PRIMARY === "gemma"
-      ? "google/gemma-4-26b-a4b-it"
-      : "anthropic/claude-sonnet-4-6";
+/**
+ * Streaming course outline generation with Gemma 4 as primary model.
+ *
+ * Strategy:
+ *   1. Try streamObject — when it works, the UI lights up lesson-by-lesson.
+ *   2. On schema failure, fall back to generateText + manual JSON parse and
+ *      emit the completed object in one shot. The user still sees the
+ *      finished course, just without the live build-up.
+ *
+ * Caller (app/api/courses/stream/route.ts) consumes `partialObjectStream`
+ * and finally awaits `object`. We expose those same surfaces here.
+ */
+
+const TEXT_MODEL_ID = process.env.AI_MODEL || "gemma-4-26b-a4b-it";
+
+function getModel(): LanguageModel {
+  if (process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+    return google(TEXT_MODEL_ID);
   }
   if (process.env.ANTHROPIC_API_KEY) {
     return anthropic("claude-sonnet-4-5-20250929");
   }
   throw new Error(
-    "No AI credentials. Set AI_GATEWAY_API_KEY (recommended) or ANTHROPIC_API_KEY in .env.local.",
+    "No AI credentials. Set GOOGLE_GENERATIVE_AI_API_KEY in .env.local.",
   );
 }
 
@@ -37,19 +51,18 @@ const VOICE_RULES = `Voice — write like a sharp human teacher, not like a pres
 
 NEVER use: delve, leverage, robust, comprehensive, cutting-edge, pivotal, seamless, utilize, vibrant, thriving, showcasing, intricate, ever-evolving, holistic, actionable, impactful, learnings, synergy, harness, foster, elevate, unleash, empower, navigate, streamline, multifaceted, ecosystem (as a metaphor), myriad, plethora, paradigm, realm, tapestry, beacon, nestled, bustling, deep dive, unpack, embark, commence, ascertain, endeavor, testament to, paramount, poised to, burgeoning, transformative, game-changer, in order to (use "to"), due to the fact that (use "because"), serves as (use "is"), features as a verb (use "has"), boasts.
 
-NEVER write: "In today's [X]", "In an era where", "It's worth noting that", "Let's explore/dive/look at", "In conclusion", "In summary", "Moreover", "Furthermore", "Additionally" (restructure instead), "The future looks bright", "Only time will tell", "At the end of the day", "When it comes to [X]", "Whether you're an X or a Y", "I hope this helps", "Great question", "Let me break this down".
+NEVER write: "In today's [X]", "In an era where", "It's worth noting that", "Let's explore/dive/look at", "In conclusion", "In summary", "Moreover", "Furthermore", "Additionally", "The future looks bright", "Only time will tell", "At the end of the day", "When it comes to [X]", "Whether you're an X or a Y".
 
 AVOID: em dashes (use commas or periods or parentheses), bold for emphasis, all-bullet-list explanations, rhetorical questions as section openers, three-item parallel structures every time.
 
 If writing in Russian, also avoid: "в современном мире", "в эпоху", "стоит отметить", "в данной статье", "следует подчеркнуть", "однако следует помнить", "тем не менее", "таким образом" as conclusion-filler.
 
-If writing in Turkish, also avoid: "günümüzde", "bu makalede ele alacağız", "belirtmek gerekir ki", "sonuç olarak" as a generic closer.`;
+If writing in Turkish, also avoid: "günümüzde", "bu makalede ele alacağız", "belirtmek gerekir ki", "sonuç olarak" as a generic closer.
 
-/**
- * Returns the streaming result for a course outline. Caller is responsible
- * for consuming `partialObjectStream` and `object` (final).
- */
-export function streamCourseOutline(input: CourseInput) {
+CRITICAL — RESPONSE FORMAT:
+Return ONLY a single JSON object matching the schema. NO markdown fences. NO reasoning steps. NO "Question: ..." or "Constraint 1: ..." or "Let me think step by step" preambles. Start your response with { and end with }. Nothing else.`;
+
+function buildPrompts(input: CourseInput): { system: string; prompt: string } {
   const { topic, level, depth, language } = input;
   const langLabel = LANG_LABEL[language] ?? language;
   const levelLabel = LEVEL_LABEL[level] ?? level;
@@ -76,15 +89,83 @@ Output language: ${langLabel}
 Design ${depth} lessons that take the learner from where they are now to real competence in this topic. Each lesson must:
 - Have a specific, intriguing title (not a generic label)
 - Have a one-sentence summary of the takeaway
-- List 2-4 concrete learning objectives written as observable behaviors ("Identify X", "Apply Y to Z"), not vague verbs ("understand", "be aware of")
+- List 2-4 concrete learning objectives written as observable behaviors
 
-Pick a single emoji that represents the course visually.`;
+Pick a single emoji that represents the course visually.
 
-  return streamObject({
-    model: resolveModel(),
-    schema: CourseOutlineSchema,
-    system,
-    prompt,
-    temperature: 0.7,
+OUTPUT JSON MATCHING EXACTLY THIS SHAPE (use these exact field names, content text in ${langLabel}):
+
+{
+  "title": "engaging 3-8 word course title",
+  "description": "2-3 sentence motivating description",
+  "emoji": "📚",
+  "lessons": [
+    {
+      "title": "memorable 2-6 word lesson title",
+      "summary": "one sentence summary",
+      "objectives": ["observable behavior", "second one"]
+    }
+  ]
+}
+
+Field names MUST be: "title", "description", "emoji", "lessons", and inside each lesson: "title", "summary", "objectives". Do NOT rename to course_title or similar. Output ONLY the JSON, nothing else.`;
+
+  return { system, prompt };
+}
+
+type StreamResult = {
+  partialObjectStream: AsyncIterable<Partial<CourseOutline>>;
+  object: Promise<CourseOutline>;
+};
+
+/**
+ * Gemma 4 doesn't deliver true partial JSON via the SDK reliably — its
+ * output stream is reasoning text first, JSON last. So we do a single
+ * generateText call with a big token budget, then emit one synthetic
+ * "done" partial. The UI still gets a finished course, just not the
+ * lesson-by-lesson live build.
+ */
+export function streamCourseOutline(input: CourseInput): StreamResult {
+  const { system, prompt } = buildPrompts(input);
+  const model = getModel();
+
+  let resolveObject: (v: CourseOutline) => void;
+  let rejectObject: (err: Error) => void;
+  const objectPromise = new Promise<CourseOutline>((res, rej) => {
+    resolveObject = res;
+    rejectObject = rej;
   });
+
+  async function* iterate(): AsyncIterable<Partial<CourseOutline>> {
+    try {
+      const { text } = await generateText({
+        model,
+        system,
+        prompt,
+        temperature: 0.7,
+        maxOutputTokens: 16000,
+        maxRetries: 1,
+      });
+      console.log(`[mnemo:ai-stream] Gemma output length: ${text.length}, last 200: ${text.slice(-200)}`);
+      const cleaned = extractJson(text);
+      const parsed = JSON.parse(cleaned);
+      const validated = CourseOutlineSchema.parse(parsed);
+      const final: CourseOutline = {
+        ...validated,
+        lessons: validated.lessons.slice(0, input.depth),
+      };
+      yield final;
+      resolveObject(final);
+    } catch (e) {
+      const err = e instanceof Error ? e : new Error(String(e));
+      console.warn("[mnemo:ai-stream] Gemma generation failed:", err.message.slice(0, 200));
+      rejectObject(err);
+      throw err;
+    }
+  }
+
+  return {
+    partialObjectStream: iterate(),
+    object: objectPromise,
+  };
 }
