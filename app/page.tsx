@@ -1,4 +1,4 @@
-import { TopicForm } from "@/components/topic-form";
+import { CreateTabs } from "@/components/create-tabs";
 import { LandingGate } from "@/components/landing-gate";
 import { Sparkles, BookOpen, Brain } from "lucide-react";
 import { getServerT } from "@/lib/i18n";
@@ -35,7 +35,7 @@ export default async function Home() {
           </p>
 
           <div className="reveal mt-10 max-w-2xl mx-auto" style={{ animationDelay: "320ms" }}>
-            <TopicForm />
+            <CreateTabs />
           </div>
         </div>
       </section>

@@ -9,7 +9,9 @@ function resolveModel(): LanguageModel | string {
   const explicit = process.env.AI_MODEL;
   if (explicit) return explicit;
   if (process.env.AI_GATEWAY_API_KEY || process.env.VERCEL) {
-    return "anthropic/claude-sonnet-4-6";
+    return process.env.AI_PRIMARY === "gemma"
+      ? "google/gemma-4-26b-a4b-it"
+      : "anthropic/claude-sonnet-4-6";
   }
   if (process.env.ANTHROPIC_API_KEY) {
     return anthropic("claude-sonnet-4-5-20250929");

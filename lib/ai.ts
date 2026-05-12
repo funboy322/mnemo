@@ -9,11 +9,23 @@ import {
   type LessonOutline,
 } from "./schemas";
 
+/**
+ * Model resolution priority:
+ *   1. AI_MODEL env (e.g., "google/gemma-4-26b-a4b-it") — explicit override
+ *   2. AI_GATEWAY_API_KEY or running on Vercel → default via Gateway
+ *   3. ANTHROPIC_API_KEY → direct Anthropic provider
+ *   4. Throw a friendly error
+ *
+ * For the Gemma 4 Good Hackathon, set AI_MODEL=google/gemma-4-26b-a4b-it
+ * (or 31b-it for higher quality) and the entire app generates with Gemma.
+ * Gemma 4 supports structured JSON output, function calling, and vision
+ * via the same AI SDK interface — no code changes beyond the model id.
+ */
 function resolveModel(): LanguageModel | string {
   const explicit = process.env.AI_MODEL;
   if (explicit) return explicit;
   if (process.env.AI_GATEWAY_API_KEY || process.env.VERCEL) {
-    return "anthropic/claude-sonnet-4-6";
+    return DEFAULT_GATEWAY_MODEL;
   }
   if (process.env.ANTHROPIC_API_KEY) {
     return anthropic("claude-sonnet-4-5-20250929");
@@ -21,6 +33,24 @@ function resolveModel(): LanguageModel | string {
   throw new Error(
     "No AI credentials. Set AI_GATEWAY_API_KEY (recommended) or ANTHROPIC_API_KEY in .env.local.",
   );
+}
+
+// Default text model. Override with AI_MODEL env. For the Gemma 4 hackathon
+// build, ship with Gemma. For other contexts, Claude Sonnet stays solid.
+const DEFAULT_GATEWAY_MODEL = process.env.AI_PRIMARY === "gemma"
+  ? "google/gemma-4-26b-a4b-it"
+  : "anthropic/claude-sonnet-4-6";
+
+/**
+ * Multimodal model — needs vision (image input). Gemma 4 supports this natively
+ * on both 31B-it and 26B-a4b-it. Used by /api/courses/from-image.
+ */
+export const VISION_MODEL =
+  process.env.AI_VISION_MODEL || "google/gemma-4-26b-a4b-it";
+
+export function getActiveModelLabel(): string {
+  const m = resolveModel();
+  return typeof m === "string" ? m : "anthropic-direct";
 }
 
 const LANG_LABEL: Record<string, string> = {
