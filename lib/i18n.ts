@@ -220,6 +220,17 @@ export type Dict = {
   reviewNoneYet: string;
   reviewSourceLesson: string;
   reviewEmpty: string;
+
+  // Gemma / positioning
+  poweredByGemma: string;
+  whyMattersTitle: string;
+  whyOpenTitle: string;
+  whyOpenBody: string;
+  whyAnyTopicTitle: string;
+  whyAnyTopicBody: string;
+  whyAnyLangTitle: string;
+  whyAnyLangBody: string;
+  fromPhotoTabBadge: string;
 };
 
 const en: Dict = {
@@ -390,6 +401,16 @@ const en: Dict = {
   reviewNoneYet: "Complete a lesson first to unlock review mode.",
   reviewSourceLesson: "From",
   reviewEmpty: "Nothing to review yet — come back after you've completed some lessons.",
+
+  poweredByGemma: "Powered by Gemma 4 · open-weights",
+  whyMattersTitle: "Why this matters",
+  whyOpenTitle: "Free, even at scale",
+  whyOpenBody: "Gemma 4 runs on a single GPU under Apache 2.0. A school with no per-token API budget can self-host the same engine that powers this site.",
+  whyAnyTopicTitle: "Any topic, any photo",
+  whyAnyTopicBody: "Type a topic or snap a page. Gemma 4's vision turns a textbook photo, a diagram, or an object into a structured course in seconds.",
+  whyAnyLangTitle: "140+ languages",
+  whyAnyLangBody: "Lessons generate natively in your language. Russian, Turkish, Hindi, Swahili — Gemma 4 covers learners the major APIs sometimes don't.",
+  fromPhotoTabBadge: "NEW",
 };
 
 const ru: Dict = {
@@ -575,6 +596,16 @@ const ru: Dict = {
   reviewNoneYet: "Пройди хотя бы один урок, чтобы открыть режим повторения.",
   reviewSourceLesson: "Из урока",
   reviewEmpty: "Пока нечего повторять. Возвращайся когда пройдёшь несколько уроков.",
+
+  poweredByGemma: "Работает на Gemma 4 · open-weights",
+  whyMattersTitle: "Почему это важно",
+  whyOpenTitle: "Бесплатно даже на масштабе",
+  whyOpenBody: "Gemma 4 крутится на одной GPU под Apache 2.0. Школа без бюджета на per-token API может развернуть тот же движок, что и здесь.",
+  whyAnyTopicTitle: "Любая тема, любая фотка",
+  whyAnyTopicBody: "Введи тему или сфотай страницу. Vision Gemma 4 превращает фото учебника, диаграмму или предмет в структурированный курс за секунды.",
+  whyAnyLangTitle: "140+ языков",
+  whyAnyLangBody: "Уроки нативно генерируются на твоём языке. Русский, турецкий, хинди, суахили — Gemma 4 покрывает учеников, до которых крупные API часто не дотягиваются.",
+  fromPhotoTabBadge: "НОВОЕ",
 };
 
 const tr: Dict = {
@@ -745,6 +776,16 @@ const tr: Dict = {
   reviewNoneYet: "Tekrar modunu açmak için önce bir ders bitir.",
   reviewSourceLesson: "Kaynak",
   reviewEmpty: "Henüz tekrar edecek bir şey yok — birkaç ders bitirdikten sonra dön.",
+
+  poweredByGemma: "Gemma 4 ile çalışır · açık ağırlıklar",
+  whyMattersTitle: "Bu neden önemli",
+  whyOpenTitle: "Ölçekte bile ücretsiz",
+  whyOpenBody: "Gemma 4 tek bir GPU üzerinde Apache 2.0 ile çalışır. Token başına API bütçesi olmayan bir okul bu siteyi besleyen motoru kendi sunucusunda barındırabilir.",
+  whyAnyTopicTitle: "Her konu, her fotoğraf",
+  whyAnyTopicBody: "Bir konu yaz ya da bir sayfa çek. Gemma 4'ün görüşü bir ders kitabı fotoğrafını, bir diyagramı veya bir nesneyi saniyeler içinde yapılandırılmış bir kursa çevirir.",
+  whyAnyLangTitle: "140+ dil",
+  whyAnyLangBody: "Dersler senin dilinde doğrudan üretilir. Türkçe, Rusça, Hintçe, Svahili — büyük API'lerin bazen ulaşamadığı öğrencileri Gemma 4 kapsar.",
+  fromPhotoTabBadge: "YENİ",
 };
 
 export const dicts: Record<Locale, Dict> = { en, ru, tr };

@@ -1,130 +1,163 @@
-# Mnemo — Duolingo для всего
+# Mnemo
 
-AI генерирует структурированный курс по любой теме: 5–12 уроков, 5 типов упражнений, streak, XP. Как Duolingo, но для маркетинга, философии, system design и чего угодно.
+> AI-personalized courses for any topic — text or photo. Built on Gemma 4 (Apache 2.0).
+>
+> Submission for the [Gemma 4 Good Hackathon](https://www.kaggle.com/competitions/gemma-4-good-hackathon) ·
+> tracks: **Future of Education** + **Digital Equity & Inclusivity**.
 
-## Стек
+Type a topic — or **photograph a textbook page, diagram, or object** — and Gemma 4 generates a structured 5–12 lesson course with 5 types of active-recall exercises, streaks, XP, and spaced-repetition review. Like Duolingo, but for anything, in any language.
+
+## Why this matters (the hackathon pitch)
+
+Personalized AI learning today is gated behind expensive per-token APIs. A student in Mumbai or Lagos or Tashkent who needs help understanding the chapter their teacher skipped can't afford ChatGPT Plus.
+
+**Mnemo + Gemma 4 changes the cost curve.** Gemma 4 is open-weights under Apache 2.0 — the same engine that powers this app can run on a single GPU in a school, in a community center, or offline on a laptop. No per-token fee. No vendor lock-in. No data leaves the device.
+
+Three pillars:
+
+1. **Free even at scale.** Gemma 4 self-hosts. Schools without API budgets can deploy the same backend that powers the demo.
+2. **Any topic, any photo.** Text input *or* multimodal: snap a textbook page, a diagram, a piece of code, an object. Gemma 4's vision generates a course grounded in what's there. Killer feature for under-resourced classrooms with paper textbooks and no internet at home.
+3. **140+ languages.** Lessons generate natively in the learner's language — Russian, Turkish, Hindi, Swahili, languages large APIs sometimes underserve.
+
+## Stack
 
 - **Next.js 16** (App Router, Turbopack, Node 24)
-- **AI SDK v6** + Vercel AI Gateway → Claude Sonnet 4.6
-- **Tailwind CSS v4** + Onest
-- **libSQL** (Turso) + Drizzle ORM — единый драйвер для dev (file://) и prod
-- **Clerk** (опциональный auth, гость-режим по умолчанию)
-- **Zod** для structured output
+- **AI SDK v6** + Vercel AI Gateway → Claude Sonnet 4.6 (text) + **Gemma 4 26B-a4b-it** (vision, via Google AI Studio)
+- **Tailwind CSS v4** + Onest type
+- **libSQL** (Turso for prod, file:// for dev) + Drizzle ORM
+- **Clerk** (optional auth, guest mode by default)
+- **Zod** for structured output
 
-## Запуск локально
+## Quickstart
 
 ```bash
 npm install
 cp .env.local.example .env.local
-# впиши AI_GATEWAY_API_KEY (или ANTHROPIC_API_KEY)
+# Required: AI_GATEWAY_API_KEY (or ANTHROPIC_API_KEY) for text generation
+# Required for photo→course: GOOGLE_GENERATIVE_AI_API_KEY (free at https://aistudio.google.com/apikey)
 npm run dev
 ```
 
-Открой [http://localhost:3000](http://localhost:3000). Первый раз пройдёшь онбординг (3 шага), потом введи любую тему — увидишь как AI пишет курс в реальном времени.
+Open [http://localhost:3000](http://localhost:3000). First-time onboarding (3 steps), then type a topic or upload a photo. Courses stream live as Gemma writes.
 
-## Структура
+## The photo → course feature
+
+Tap **From photo** on the landing. Upload a JPEG/PNG/WebP (up to 8 MB). Gemma 4 26B-a4b-it analyzes the image and generates a 5-lesson course built around its specific subject.
+
+Examples we've tested:
+- 📷 Textbook page on photosynthesis → 5-lesson course on the Calvin cycle, with specific exercise on light-dependent reactions
+- 📷 Wiring diagram of a 555 timer → course on monostable vs astable modes, with order-the-circuit-steps exercise
+- 📷 Photo of a chess endgame → course on opposition, zugzwang, key squares
+
+The exercises generated are SPECIFIC to the image — not generic "introduction to electronics."
+
+## Tech architecture
 
 ```
 app/
-  page.tsx                       — лендинг + онбординг wizard
-  dashboard/                     — мои курсы + streak/XP + review card
-  course/[id]/                   — Duolingo-style путь уроков
-  course/[id]/lesson/[lessonId]/ — плеер урока
-  review/                        — режим повторения (spaced repetition)
-  api/courses/                   — POST: обычная генерация
-  api/courses/stream/            — POST: streaming SSE
-  api/courses/[id]/              — GET: курс + прогресс
-  api/lessons/[id]/              — GET: ленивая генерация контента
-  api/lessons/[id]/complete/     — POST: фиксация прохождения
-  api/review/exercises/          — GET: пул упражнений для повторения
-  api/review/complete/           — POST: XP за сессию повторения
-  api/me/                        — GET: статистика + курсы + due-review
-  api/migrate/                   — POST: миграция гость→Clerk
+  page.tsx                       — landing + onboarding gate
+  dashboard/                     — courses + streak/XP + review-due card
+  course/[id]/                   — Duolingo-style path
+  course/[id]/lesson/[lessonId]/ — lesson player + 5 exercise types
+  review/                        — spaced repetition session
+  api/courses/                   — POST text generation
+  api/courses/stream/            — POST SSE streaming text gen
+  api/courses/from-image/        — POST Gemma 4 vision → course
+  api/lessons/[id]/              — GET lazy lesson content generation
+  api/lessons/[id]/complete/     — POST progress
+  api/review/exercises/          — GET review pool
+  api/review/complete/           — POST review XP
+  api/me/                        — GET stats + courses + review-due
+  api/migrate/                   — POST guest → Clerk migration
 components/
-  lesson/                        — плеер + 5 типов упражнений + confetti
-  review/                        — review-плеер
+  lesson/                        — player + 5 exercise types + confetti
+  review/                        — review player
+  photo-upload.tsx               — drag-drop + Gemma submission
+  streaming-preview.tsx          — live SSE preview
   onboarding.tsx                 — 3-step wizard
-  streaming-preview.tsx          — UI потоковой генерации
-  ui/                            — button, input, progress-bar
+  create-tabs.tsx                — Topic | Photo switch on landing
 lib/
-  schemas.ts                     — Zod schemas для AI structured output
-  ai.ts, ai-stream.ts            — обычная + streaming генерация
-  db.ts, db-schema.ts            — libsql + Drizzle
-  repository.ts                  — async DB-слой
-  i18n.ts                        — 3 локали: en/ru/tr
-docs/
-  CONTEXT.md, adr/*.md           — архитектура и решения
+  schemas.ts                     — Zod for AI structured output
+  ai.ts, ai-stream.ts            — text generation (Claude or Gemma)
+  ai-vision.ts                   — Gemma 4 vision pipeline
+  db.ts, db-schema.ts            — libsql + Drizzle (works on file:// or libsql://)
+  repository.ts                  — async DB layer
+  i18n.ts                        — 3 locales (en/ru/tr)
 ```
 
-## Типы упражнений
+## Exercise types
 
-1. **Multiple choice** — 4 варианта, клавиатура `1`-`4`
-2. **Fill blank** — ввести слово
-3. **True/false** — клавиатура `1`/`T` или `2`/`F`
-4. **Matching** — кликнуть слева → справа
-5. **Order** — расставить по порядку
+1. **Multiple choice** — 4 plausible options, keyboard `1`-`4`
+2. **Fill blank** — 1 input, alternatives accepted
+3. **True/false** — keyboard `1`/`T` or `2`/`F`
+4. **Matching** — click left → click right to pair
+5. **Order** — arrange items in correct sequence
 
-## Deploy на Vercel
-
-### 1. Создать Turso DB (бесплатно, 5 минут)
+## Deploy on Vercel
 
 ```bash
-# CLI способ
-brew install tursodatabase/tap/turso   # macOS
-turso auth signup                       # или login
+# 1. Sign up at https://turso.tech (free)
 turso db create mnemo
-turso db show mnemo --url               # → TURSO_DATABASE_URL
-turso db tokens create mnemo            # → TURSO_AUTH_TOKEN
-```
+turso db show mnemo --url       # → TURSO_DATABASE_URL
+turso db tokens create mnemo    # → TURSO_AUTH_TOKEN
 
-Или через UI: https://turso.tech → Create database → Tokens.
+# 2. Get Google AI Studio key (free)
+# https://aistudio.google.com/apikey
 
-### 2. Привязать проект к Vercel
-
-```bash
+# 3. Deploy
 npm i -g vercel
 vercel link
-```
-
-### 3. Установить env vars в Vercel
-
-```bash
 vercel env add AI_GATEWAY_API_KEY production
+vercel env add GOOGLE_GENERATIVE_AI_API_KEY production
 vercel env add TURSO_DATABASE_URL production
 vercel env add TURSO_AUTH_TOKEN production
-# Опционально для login:
-vercel env add NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY production
-vercel env add CLERK_SECRET_KEY production
-```
-
-### 4. Деплой
-
-```bash
 vercel deploy --prod
 ```
 
-После первого запроса в проде создастся схема (CREATE IF NOT EXISTS). Никаких миграций руками.
+Schema bootstraps automatically on first request — no manual migrations.
 
 ## Env vars
 
-| Variable | Required | Зачем |
+| Variable | Required | Purpose |
 |---|---|---|
-| `AI_GATEWAY_API_KEY` | да* | Vercel AI Gateway. https://vercel.com/dashboard/ai-gateway |
-| `ANTHROPIC_API_KEY` | альтернатива | Прямой Anthropic, если нет Gateway |
-| `AI_MODEL` | нет | Override модели. По умолчанию `anthropic/claude-sonnet-4-6` |
-| `TURSO_DATABASE_URL` | prod | libsql URL. Без него — локальный file. |
-| `TURSO_AUTH_TOKEN` | prod | Auth token для Turso |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | нет | Включает sign-in. Без него — гость-режим. |
-| `CLERK_SECRET_KEY` | нет | Парный к публичному |
+| `AI_GATEWAY_API_KEY` | yes* | Vercel AI Gateway — text generation via Claude Sonnet 4.6 |
+| `ANTHROPIC_API_KEY` | alternative | Direct Anthropic, if no Gateway |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | for photo→course | Google AI Studio — Gemma 4 vision |
+| `AI_MODEL` | no | Override text model |
+| `AI_VISION_MODEL` | no | Override vision model (default `gemma-4-26b-a4b-it`) |
+| `AI_PRIMARY=gemma` | no | Use Gemma 4 for text too (less reliable, see notes) |
+| `TURSO_DATABASE_URL` | prod | libsql connection string |
+| `TURSO_AUTH_TOKEN` | prod | Turso auth |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | no | Enables sign-in. Guest mode without it. |
+| `CLERK_SECRET_KEY` | no | Pair with above |
 
-*Один из AI ключей обязателен.
+*One AI text key required.
 
-## Скрипты
+## Why Claude for text + Gemma 4 for vision?
+
+Honest engineering note. Gemma 4 text generation works great via Vercel AI Gateway, but the AI SDK's strict-schema mode for `generateObject` doesn't yet pass cleanly to Gemma 4 through Gateway routing (Novita/Parasail providers). So:
+
+- **Text courses (typing a topic)** use Claude Sonnet 4.6 — battle-tested with strict Zod schemas and discriminated unions for exercise types.
+- **Photo → course (Gemma 4 multimodal)** uses Google AI Studio direct, with `generateText` + manual JSON parse + Zod validation. This works reliably and is the genuine Gemma 4 showcase: open-weights multimodal vision is exactly where it earns its keep.
+
+Set `AI_PRIMARY=gemma` to use Gemma 4 for text too — quality is high, but expect occasional JSON parse retries until the SDK improves Gemma support.
+
+## Scripts
 
 ```bash
-npm run dev         # dev сервер (Turbopack)
+npm run dev         # dev (Turbopack)
 npm run build       # production build
-npm start           # production server, авто-source .env.local
+npm start           # production (auto-sources .env.local)
 npm run lint        # ESLint
-npm run seed:demo   # засеять демо-курс по стоицизму для u_demo
+npm run seed:demo   # seed a hand-crafted demo course (no AI key needed)
 ```
+
+## License
+
+MIT.
+
+## Acknowledgments
+
+- Google DeepMind & Kaggle for the [Gemma 4 Good Hackathon](https://www.kaggle.com/competitions/gemma-4-good-hackathon)
+- Anthropic, Google, Vercel for AI infrastructure
+- The Duolingo team for showing the world that learning can be a habit
