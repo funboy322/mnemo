@@ -146,6 +146,19 @@ const COURSE_OUTLINE_TEMPLATE = `{
   ]
 }`;
 
+const PROGRESSION_RULES = `LESSON PROGRESSION — the most important rule:
+
+A good course unfolds like a story, not a textbook. Each lesson rests on the previous and prepares the next. Beginners learn one foundational idea at a time, not a comprehensive overview.
+
+- Lesson 1 teaches the SINGLE smallest big idea everything else depends on. Pick the insight that, once internalized, makes lessons 2-N obvious. NOT a generic introduction or history dump.
+- Each subsequent lesson adds ONE new layer. Never reach for a concept that will be a later lesson's topic.
+- The final lesson is application, synthesis, or putting pieces together — not new theory.
+- A learner ending lesson 1 should be able to say one specific true thing they couldn't say before. Same for every lesson.
+
+Anti-pattern to avoid: "Lesson 1: History and background. Lesson 2: Key concepts. Lesson 3: Advanced applications." This is a textbook table of contents, not a learning path. It dumps context the learner has no reason to care about yet.
+
+Better pattern: each lesson is a self-contained "aha" moment that an expert tutor would deliver in 5 minutes, in the right order.`;
+
 export async function generateCourseOutline(input: CourseInput): Promise<CourseOutline> {
   const { topic, level, depth, language } = input;
   const langLabel = LANG_LABEL[language] ?? language;
@@ -154,10 +167,12 @@ export async function generateCourseOutline(input: CourseInput): Promise<CourseO
   const system = `You are an expert curriculum designer creating bite-sized learning paths in the spirit of Duolingo.
 
 Your courses are:
-- Progressive: each lesson assumes only the previous ones
+- Progressive: each lesson assumes only the previous ones, never the next
 - Concrete, not generic: every lesson teaches a specific skill or insight, never a vague "introduction to X"
 - Intriguing: titles are memorable. Not "Lesson 1: Introduction" but "Why your brain craves rewards"
 - Useful: a learner can apply what they learn
+
+${PROGRESSION_RULES}
 
 ${VOICE_RULES}
 
@@ -191,6 +206,25 @@ Field names MUST be: "title", "description", "emoji", "lessons", and inside each
   return { ...outline, lessons: outline.lessons.slice(0, depth) };
 }
 
+const LESSON_PEDAGOGY = `PEDAGOGY — the most important rule:
+
+This is ONE lesson, not a chapter. The learner has 5 minutes. Teach exactly enough that they can do what the objectives say, no more.
+
+- Each content block introduces ONE new idea. If a concept has 3 parts, use 3 blocks. Never cram three points into one block.
+- The FIRST block hooks: a surprising claim, a vivid question, a concrete situation. NOT a definition or history. Definitions come after the hook makes the learner want one.
+- Each block builds on the previous block in this lesson, AND on previous lessons. Never reach into a future lesson's territory.
+- Address the learner directly ("you", "your"). Not "students" or "people".
+- Concrete examples have real names, real numbers, real places. Never "a person" or "imagine a company".
+- Don't restate the lesson summary inside the blocks. The summary is for navigation; blocks are for teaching.
+- Short blocks beat long ones. 2-4 sentences each is the target. If a block goes past 6 sentences, it's two blocks.
+
+Exercises must test EXACTLY what THIS lesson's blocks taught. Never test:
+- material from earlier lessons (that's review mode's job)
+- material a future lesson will teach
+- generic knowledge unrelated to this lesson's specific framing
+
+If the learner reads the blocks once, the exercises should be doable. If they're not, your blocks didn't teach enough; rewrite them, don't pad the exercises.`;
+
 export async function generateLessonContent(args: {
   courseTitle: string;
   courseTopic: string;
@@ -198,10 +232,14 @@ export async function generateLessonContent(args: {
   language: string;
   lesson: LessonOutline;
   previousLessonTitles: string[];
+  lessonNumber?: number;
+  totalLessons?: number;
 }): Promise<LessonContent> {
   const { courseTitle, courseTopic, level, language, lesson, previousLessonTitles } = args;
   const langLabel = LANG_LABEL[language] ?? language;
   const levelLabel = LEVEL_LABEL[level] ?? level;
+  const lessonNumber = args.lessonNumber ?? previousLessonTitles.length + 1;
+  const totalLessons = args.totalLessons ?? previousLessonTitles.length + 1;
 
   const system = `You are an expert teacher writing a single bite-sized lesson in a Duolingo-style course.
 
@@ -211,15 +249,17 @@ Your lessons:
 - Test understanding through varied, engaging exercises — not just multiple choice
 - Are memorable: the learner walks away with something specific they couldn't do before
 
+${LESSON_PEDAGOGY}
+
 ${VOICE_RULES}
 
 ALL output text (lesson content, questions, answers, explanations, options) MUST be in ${langLabel}.`;
 
   const prevContext = previousLessonTitles.length
-    ? `\nPrevious lessons in this course (the learner already knows this):\n${previousLessonTitles.map((t, i) => `${i + 1}. ${t}`).join("\n")}`
-    : "";
+    ? `\nWhat the learner already covered (lessons before this one):\n${previousLessonTitles.map((t, i) => `${i + 1}. ${t}`).join("\n")}\n\nYou can reference these. Don't re-teach them — assume the learner remembers.`
+    : `\nThis is the FIRST lesson. The learner knows nothing about this topic yet. Start from zero.`;
 
-  const prompt = `Write the content for ONE lesson in the course "${courseTitle}" (topic: ${courseTopic}).
+  const prompt = `Write the content for lesson ${lessonNumber} of ${totalLessons} in the course "${courseTitle}" (topic: ${courseTopic}).
 
 Lesson: "${lesson.title}"
 Summary: ${lesson.summary}
@@ -231,8 +271,8 @@ Output language: ${langLabel}
 ${prevContext}
 
 Produce:
-1. 2-4 content blocks teaching the concepts. Mix "concept" blocks (clear explanations) and "example" blocks (concrete worked examples with specific names/situations). Vary block length: some short and punchy, some longer. Use markdown sparingly — bold one phrase per block at most.
-2. 4-6 exercises that genuinely test the lesson's objectives. USE A MIX of types — include at least 3 different exercise types from: multiple_choice, fill_blank, true_false, matching, order. Each exercise should test the lesson's specific content, never generic knowledge.
+1. 2-4 content blocks teaching ONLY what this lesson's objectives require. ONE new idea per block. Short blocks (2-4 sentences each). Mix "concept" blocks and "example" blocks. The FIRST block hooks — surprising claim, vivid question, or a concrete moment. NOT a definition.
+2. 4-6 exercises that test EXACTLY what the blocks above just taught. USE A MIX of types — include at least 3 different exercise types from: multiple_choice, fill_blank, true_false, matching, order. Each exercise must be answerable from the blocks alone — never from outside knowledge.
 
 OUTPUT JSON MATCHING EXACTLY THIS SHAPE:
 

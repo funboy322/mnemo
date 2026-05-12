@@ -34,6 +34,8 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ id: string
         objectives: lesson.objectives as string[],
       },
       previousLessonTitles: previousTitles,
+      lessonNumber: lesson.position + 1,
+      totalLessons: allLessons.length,
     });
     await saveLessonContent(id, content);
     return NextResponse.json({ lesson: { ...lesson, content, generatedAt: new Date() } });

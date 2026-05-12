@@ -62,6 +62,19 @@ If writing in Turkish, also avoid: "günümüzde", "bu makalede ele alacağız",
 CRITICAL — RESPONSE FORMAT:
 Return ONLY a single JSON object matching the schema. NO markdown fences. NO reasoning steps. NO "Question: ..." or "Constraint 1: ..." or "Let me think step by step" preambles. Start your response with { and end with }. Nothing else.`;
 
+const PROGRESSION_RULES = `LESSON PROGRESSION — the most important rule:
+
+A good course unfolds like a story, not a textbook. Each lesson rests on the previous and prepares the next. Beginners learn one foundational idea at a time, not a comprehensive overview.
+
+- Lesson 1 teaches the SINGLE smallest big idea everything else depends on. Pick the insight that, once internalized, makes lessons 2-N obvious. NOT a generic introduction or history dump.
+- Each subsequent lesson adds ONE new layer. Never reach for a concept that will be a later lesson's topic.
+- The final lesson is application, synthesis, or putting pieces together — not new theory.
+- A learner ending lesson 1 should be able to say one specific true thing they couldn't say before. Same for every lesson.
+
+Anti-pattern to avoid: "Lesson 1: History and background. Lesson 2: Key concepts. Lesson 3: Advanced applications." This is a textbook table of contents, not a learning path.
+
+Better pattern: each lesson is a self-contained "aha" moment that an expert tutor would deliver in 5 minutes, in the right order.`;
+
 function buildPrompts(input: CourseInput): { system: string; prompt: string } {
   const { topic, level, depth, language } = input;
   const langLabel = LANG_LABEL[language] ?? language;
@@ -70,10 +83,12 @@ function buildPrompts(input: CourseInput): { system: string; prompt: string } {
   const system = `You are an expert curriculum designer creating bite-sized learning paths in the spirit of Duolingo.
 
 Your courses are:
-- Progressive: each lesson assumes only the previous ones
+- Progressive: each lesson assumes only the previous ones, never the next
 - Concrete, not generic: every lesson teaches a specific skill or insight, never a vague "introduction to X"
 - Intriguing: titles are memorable. Not "Lesson 1: Introduction" but "Why your brain craves rewards"
 - Useful: a learner can apply what they learn
+
+${PROGRESSION_RULES}
 
 ${VOICE_RULES}
 
