@@ -86,19 +86,19 @@ export function ExerciseOrder({ exercise, answered, onAnswer }: Props) {
                           type="button"
                           onClick={() => move(i, -1)}
                           disabled={i === 0}
-                          className="text-zinc-400 hover:text-zinc-700 disabled:opacity-30"
+                          className="h-7 w-7 inline-flex items-center justify-center text-zinc-400 hover:text-zinc-700 disabled:opacity-30 active:bg-zinc-100 rounded"
                           aria-label={t.moveUp}
                         >
-                          <ChevronUp className="h-4 w-4" />
+                          <ChevronUp className="h-5 w-5" />
                         </button>
                         <button
                           type="button"
                           onClick={() => move(i, 1)}
                           disabled={i === chosen.length - 1}
-                          className="text-zinc-400 hover:text-zinc-700 disabled:opacity-30"
+                          className="h-7 w-7 inline-flex items-center justify-center text-zinc-400 hover:text-zinc-700 disabled:opacity-30 active:bg-zinc-100 rounded"
                           aria-label={t.moveDown}
                         >
-                          <ChevronDown className="h-4 w-4" />
+                          <ChevronDown className="h-5 w-5" />
                         </button>
                       </div>
                     )}
@@ -106,10 +106,10 @@ export function ExerciseOrder({ exercise, answered, onAnswer }: Props) {
                       <button
                         type="button"
                         onClick={() => unpick(it)}
-                        className="text-zinc-400 hover:text-red-600"
+                        className="h-9 w-9 inline-flex items-center justify-center text-zinc-400 hover:text-red-600 active:bg-red-50 rounded-lg"
                         aria-label={t.remove}
                       >
-                        <X className="h-4 w-4" />
+                        <X className="h-5 w-5" />
                       </button>
                     )}
                   </div>

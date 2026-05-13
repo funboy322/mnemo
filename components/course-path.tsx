@@ -64,9 +64,18 @@ export function CoursePath({ courseId, lessons }: { courseId: string; lessons: L
 }
 
 function lessonOffset(idx: number): number {
-  // gentle zig-zag like Duolingo path: 0, 60, 30, -30, -60, -30, 0, 30, 60, 30, 0
+  // gentle zig-zag like Duolingo. Tighter on mobile so nodes stay on-screen.
   const pattern = [0, 60, 30, -30, -60, -30, 0, 30, 60, 30, 0, -30];
   return pattern[idx % pattern.length];
+}
+
+/** CSS clamp so the zigzag amplitude shrinks on narrow screens automatically.
+ *  Mobile (320-400px) gets ~half amplitude; desktop gets full. */
+function offsetTransform(offset: number): string {
+  if (offset === 0) return "translateX(0)";
+  const sign = offset < 0 ? "-" : "";
+  const abs = Math.abs(offset);
+  return `translateX(${sign}clamp(${abs / 2}px, ${abs / 5}vw, ${abs}px))`;
 }
 
 function LessonNode({
@@ -106,7 +115,7 @@ function LessonNode({
       )}
       ref={ref}
     >
-      <div style={{ transform: `translateX(${offsetX}px)` }} className="relative flex flex-col items-center">
+      <div style={{ transform: offsetTransform(offsetX) }} className="relative flex flex-col items-center">
         <button
           type="button"
           onClick={() => !isLocked && setOpen((o) => !o)}
