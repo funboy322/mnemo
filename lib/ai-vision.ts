@@ -37,6 +37,9 @@ const LANG_LABEL: Record<string, string> = {
   ru: "Russian (русский)",
   en: "English",
   tr: "Turkish (Türkçe)",
+  es: "Spanish (Español)",
+  hi: "Hindi (हिन्दी)",
+  ar: "Arabic (العربية)",
 };
 
 const LEVEL_LABEL: Record<string, string> = {

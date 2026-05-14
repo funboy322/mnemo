@@ -3,7 +3,7 @@ import { z } from "zod";
 export const LevelSchema = z.enum(["beginner", "intermediate", "advanced"]);
 export type Level = z.infer<typeof LevelSchema>;
 
-export const LANGUAGES = ["en", "ru", "tr"] as const;
+export const LANGUAGES = ["en", "ru", "tr", "es", "hi", "ar"] as const;
 export const LanguageSchema = z.enum(LANGUAGES);
 export type Language = z.infer<typeof LanguageSchema>;
 

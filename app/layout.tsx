@@ -4,7 +4,7 @@ import "./globals.css";
 import { UserProvider } from "@/components/user-provider";
 import { LocaleProvider } from "@/components/locale-provider";
 import { Header } from "@/components/header";
-import { getServerLocale, getDict } from "@/lib/i18n";
+import { getServerLocale, getDict, RTL_LOCALES } from "@/lib/i18n";
 import { isClerkEnabled } from "@/lib/auth-config";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -46,8 +46,9 @@ export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const locale = await getServerLocale();
+  const dir = RTL_LOCALES.has(locale) ? "rtl" : "ltr";
   const tree = (
-    <html lang={locale} className="h-full antialiased">
+    <html lang={locale} dir={dir} className="h-full antialiased">
       <body className="min-h-full flex flex-col font-display bg-zinc-50 text-zinc-900">
         <LocaleProvider initialLocale={locale}>
           <UserProvider>
