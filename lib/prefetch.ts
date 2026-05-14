@@ -2,43 +2,61 @@
  * Client-side pre-generation helpers. Fire-and-forget fetches that warm the
  * server cache before the user actually navigates.
  *
- * Why this works on Vercel: the function keeps running on the server even if
- * the client aborts; by the time the user clicks "Start lesson", the content
- * is already saved in the database.
+ * Why this works on Vercel: each function keeps running on the server even
+ * if the client aborts. By the time the user clicks any lesson, content is
+ * already in the database.
  *
- * Trade-off: one extra Gemma 4 call per course creation. Worth it for the
- * dramatic perceived-speed improvement — first lesson opens instantly
- * instead of waiting another 30-60s for Gemma to think.
+ * Trade-off: extra Gemma 4 calls per course creation (one per lesson).
+ * Google AI Studio free tier is generous enough; the dramatic perceived-
+ * speed win is worth it.
  */
 
 /**
- * After a course is created, kick off lesson 1's content generation in the
- * background. The user will navigate to /course/[id] while this runs.
- * By the time they click "Start lesson", content is ready or close to it.
+ * After a course is created, kick off content generation for ALL lessons
+ * in parallel. The user will navigate to /course/[id] while these run.
+ * By the time they tap any lesson, content is ready or close to it.
+ *
+ * We stagger the parallel fan-out slightly (3 immediate, 2 delayed) to
+ * stay under the Google AI free-tier token-per-minute ceiling. With
+ * Gemma 4 thinking ~5-8k tokens per lesson, 5 simultaneous calls would
+ * exceed 32k TPM on the free tier. Staggering keeps us safely under.
  */
-export function prefetchFirstLesson(courseId: string): void {
+export function prefetchAllLessons(courseId: string): void {
   if (typeof window === "undefined") return;
-  // Don't await — pure fire-and-forget. Even if the function takes 60s on the
-  // server, the user's request to /api/courses already returned and they're
-  // navigating elsewhere.
+
   fetch(`/api/courses/${courseId}`)
     .then((r) => r.json())
-    .then((data: { lessons?: Array<{ id: string }> }) => {
-      const firstLessonId = data.lessons?.[0]?.id;
-      if (!firstLessonId) return;
-      // This will internally trigger Gemma 4 generation if content isn't
-      // already cached. Server saves the result before responding.
-      void fetch(`/api/lessons/${firstLessonId}`, {
-        // keepalive lets the request survive the page navigation. With this
-        // the browser doesn't kill the request when the user moves to a new
-        // page. Vercel function keeps running on the server regardless, but
-        // this is belt-and-suspenders.
-        keepalive: true,
-      }).catch(() => {
-        // We don't care about the response — server saves to DB.
-      });
+    .then((data: { lessons?: Array<{ id: string; hasContent?: boolean }> }) => {
+      const lessons = data.lessons ?? [];
+      // Only fire for lessons that don't already have content (idempotent).
+      const targets = lessons.filter((l) => !l.hasContent).map((l) => l.id);
+      if (targets.length === 0) return;
+
+      // First 3 fire immediately; the rest after a short delay to spread
+      // load and respect rate limits on the free tier.
+      const immediate = targets.slice(0, 3);
+      const delayed = targets.slice(3);
+
+      for (const id of immediate) {
+        void fetch(`/api/lessons/${id}`, { keepalive: true }).catch(() => {});
+      }
+      if (delayed.length > 0) {
+        setTimeout(() => {
+          for (const id of delayed) {
+            void fetch(`/api/lessons/${id}`, { keepalive: true }).catch(() => {});
+          }
+        }, 35_000); // 35s — long enough for first batch to finish reasoning
+      }
     })
     .catch(() => {
-      // Swallow errors silently — prefetch is best-effort.
+      // Best-effort. If prefetch fails, the lesson-open flow generates
+      // on demand anyway.
     });
 }
+
+/**
+ * Same as prefetchAllLessons but for users who already have a course open.
+ * Triggered from the course-path page so opening an existing course (not
+ * a freshly-created one) also warms the cache.
+ */
+export const prefetchFirstLesson = prefetchAllLessons;

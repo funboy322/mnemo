@@ -5,6 +5,7 @@ import { useUserId } from "./user-provider";
 import { useT } from "./locale-provider";
 import { Check, Lock, Play, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { prefetchAllLessons } from "@/lib/prefetch";
 
 type LessonItem = {
   id: string;
@@ -33,6 +34,13 @@ export function CoursePath({ courseId, lessons }: { courseId: string; lessons: L
       })
       .catch(() => setLoaded(true));
   }, [courseId, userId]);
+
+  // Warm all lessons without content in the background. Idempotent — server
+  // checks DB before regenerating. Helps users who land on existing courses
+  // from elsewhere (not just the fresh-creation flow).
+  React.useEffect(() => {
+    prefetchAllLessons(courseId);
+  }, [courseId]);
 
   function stateFor(lesson: LessonItem): LessonState {
     if (completedIds.has(lesson.id)) return "completed";
