@@ -9,6 +9,7 @@ import { Loader2 } from "lucide-react";
 import { LOCALE_FLAGS, LOCALE_LABELS, SUPPORTED_LOCALES } from "@/lib/i18n";
 import type { Language, CourseOutline } from "@/lib/schemas";
 import { StreamingPreview } from "./streaming-preview";
+import { prefetchFirstLesson } from "@/lib/prefetch";
 
 const LEVELS = ["beginner", "intermediate", "advanced"] as const;
 const DEPTHS = [5, 8, 12] as const;
@@ -121,6 +122,9 @@ export function TopicForm() {
       }
 
       if (finalCourseId) {
+        // Kick off lesson 1 generation in background — by the time user
+        // clicks "Start lesson", content should be ready in DB.
+        prefetchFirstLesson(finalCourseId);
         // Brief moment to admire the completed preview, then navigate
         setTimeout(() => router.push(`/course/${finalCourseId}`), 800);
       }

@@ -7,6 +7,7 @@ import { useUserId } from "./user-provider";
 import { ArrowLeft, ArrowRight, Heart, Briefcase, Sparkles, GraduationCap, Brain, Coffee, Flame, Mountain } from "lucide-react";
 import { StreamingPreview } from "./streaming-preview";
 import { useRouter } from "next/navigation";
+import { prefetchFirstLesson } from "@/lib/prefetch";
 import type { CourseOutline, Language } from "@/lib/schemas";
 import { cn } from "@/lib/utils";
 
@@ -133,6 +134,7 @@ export function Onboarding({ onSkip }: { onSkip: () => void }) {
       }
 
       if (courseId) {
+        prefetchFirstLesson(courseId);
         setTimeout(() => router.push(`/course/${courseId}`), 900);
       }
     } catch (err) {

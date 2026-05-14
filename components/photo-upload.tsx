@@ -7,6 +7,8 @@ import { Button } from "./ui/button";
 import { Loader2, Camera, X, Sparkles, ImageIcon } from "lucide-react";
 import type { Language } from "@/lib/schemas";
 import { cn } from "@/lib/utils";
+import { prefetchFirstLesson } from "@/lib/prefetch";
+import { StreamingPreview } from "./streaming-preview";
 
 const MAX_FILE_BYTES = 8 * 1024 * 1024; // 8 MB
 const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
@@ -71,6 +73,8 @@ export function PhotoUpload() {
       if (!res.ok || !data.courseId) {
         throw new Error(data.message || data.error || "Generation failed");
       }
+      // Warm lesson 1 in background so first click on Start is instant
+      prefetchFirstLesson(data.courseId);
       router.push(`/course/${data.courseId}`);
     } catch (err) {
       setError((err as Error).message);
@@ -84,6 +88,26 @@ export function PhotoUpload() {
     setError(null);
     setHint("");
     if (inputRef.current) inputRef.current.value = "";
+  }
+
+  // While Gemma 4 is reading the photo, show the same staged-loading UI as
+  // the text-course generation flow. Looks consistent and gives the user
+  // real feedback during the 30-60s wait.
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        <StreamingPreview
+          topic="your photo"
+          depth={5}
+          partial={null}
+          done={false}
+          error={null}
+        />
+        <p className="text-xs text-zinc-500 text-center">
+          Gemma 4's vision is reading the image. Don't close this tab.
+        </p>
+      </div>
+    );
   }
 
   return (
