@@ -418,7 +418,7 @@ const en: Dict = {
   whyAnyTopicTitle: "Any topic, any photo",
   whyAnyTopicBody: "Type a topic or snap a page. Gemma 4's vision turns a textbook photo, a diagram, or an object into a structured course in seconds.",
   whyAnyLangTitle: "Lessons in 140+ languages",
-  whyAnyLangBody: "Gemma 4 generates lessons natively in any of 140+ languages. The interface ships in 6 (English, Russian, Turkish, Spanish, Hindi, Arabic). Community translations welcome.",
+  whyAnyLangBody: "Lessons generate natively in 140+ languages — Russian, Turkish, Hindi, Swahili, the languages other learning apps underserve. The interface ships in 6 (English, Russian, Turkish, Spanish, Hindi, Arabic). Community translations welcome.",
   fromPhotoTabBadge: "NEW",
 };
 
@@ -613,7 +613,7 @@ const ru: Dict = {
   whyAnyTopicTitle: "Любая тема, любая фотка",
   whyAnyTopicBody: "Введи тему или сфотай страницу. Vision Gemma 4 превращает фото учебника, диаграмму или предмет в структурированный курс за секунды.",
   whyAnyLangTitle: "Уроки на 140+ языках",
-  whyAnyLangBody: "Gemma 4 нативно генерирует уроки на любом из 140+ языков. Сам интерфейс пока на 6 (английский, русский, турецкий, испанский, хинди, арабский). Community translations welcome.",
+  whyAnyLangBody: "Уроки нативно на любом из 140+ языков — русский, турецкий, хинди, суахили, те языки, которые крупные API-сервисы часто игнорируют. Сам интерфейс пока на 6 (английский, русский, турецкий, испанский, хинди, арабский). Community translations welcome.",
   fromPhotoTabBadge: "НОВОЕ",
 };
 
@@ -793,7 +793,7 @@ const tr: Dict = {
   whyAnyTopicTitle: "Her konu, her fotoğraf",
   whyAnyTopicBody: "Bir konu yaz ya da bir sayfa çek. Gemma 4'ün görüşü bir ders kitabı fotoğrafını, bir diyagramı veya bir nesneyi saniyeler içinde yapılandırılmış bir kursa çevirir.",
   whyAnyLangTitle: "140+ dilde dersler",
-  whyAnyLangBody: "Gemma 4, 140+ dilde dersleri yerel olarak üretir. Arayüz 6 dilde (İngilizce, Rusça, Türkçe, İspanyolca, Hintçe, Arapça). Topluluk çevirileri memnuniyetle karşılanır.",
+  whyAnyLangBody: "Dersler 140+ dilde yerel olarak üretilir — Rusça, Türkçe, Hintçe, Svahili, büyük API'ların ihmal ettiği diller. Arayüz 6 dilde (İngilizce, Rusça, Türkçe, İspanyolca, Hintçe, Arapça). Topluluk çevirileri memnuniyetle karşılanır.",
   fromPhotoTabBadge: "YENİ",
 };
 

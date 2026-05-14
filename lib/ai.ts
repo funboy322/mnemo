@@ -1,7 +1,6 @@
 import { generateObject, generateText, type LanguageModel } from "ai";
 import { google } from "@ai-sdk/google";
 import { anthropic } from "@ai-sdk/anthropic";
-import { z } from "zod";
 import {
   CourseOutlineSchema,
   LessonContentSchema,
@@ -13,20 +12,26 @@ import {
 import { extractJson } from "./json-extract";
 
 /**
- * Mnemo is a Gemma 4 Good Hackathon submission. All AI work routes through
- * Gemma 4 26B-a4b-it (open-weights, Apache 2.0) by default, via Google AI
- * Studio. Other models are kept as escape hatches for development.
+ * Text generation routing for Mnemo.
  *
- * Why two code paths (generateObject + generateText fallback)?
- * Open-weights models occasionally fail strict tool/schema mode in the AI SDK.
- * generateObject is tried first (faster, cleaner). If schema validation fails,
- * we fall back to generateText + manual JSON parse + Zod validate. The
- * fallback is what powers the photo→course feature in lib/ai-vision.ts and
- * we use the same trick here for text courses.
+ * Default: gemini-2.5-flash (Google AI Studio direct) — fast structured
+ * output, ~5-10s per course. Same API key as Gemma 4 vision.
+ *
+ * Why not Gemma 4 for text by default? Gemma 4 spends 60-120s reasoning
+ * before emitting JSON — that's the model's design (open-weights with
+ * explicit reasoning traces) but it kills the interactive UX. For a
+ * Duolingo-style app where the user expects "create course → seconds → go",
+ * Gemini Flash is the right tool for *text* generation.
+ *
+ * Gemma 4's actual showcase in this app is photo→course (lib/ai-vision.ts).
+ * That's where it earns its keep: open-weights multimodal vision a closed
+ * API can't match for free. The text path is supplementary.
+ *
+ * Opt back into Gemma for text via env: AI_MODEL=gemma-4-26b-a4b-it.
  */
 
-const TEXT_MODEL_ID = process.env.AI_MODEL || "gemma-4-26b-a4b-it";
-const FALLBACK_MODEL_ID = process.env.AI_FALLBACK_MODEL; // optional Claude fallback
+const DEFAULT_TEXT_MODEL = "gemini-2.5-flash";
+const TEXT_MODEL_ID = process.env.AI_MODEL || DEFAULT_TEXT_MODEL;
 
 function getModel(): LanguageModel {
   if (process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
@@ -36,16 +41,8 @@ function getModel(): LanguageModel {
     return anthropic("claude-sonnet-4-5-20250929");
   }
   throw new Error(
-    "No AI credentials. Set GOOGLE_GENERATIVE_AI_API_KEY (recommended) or ANTHROPIC_API_KEY in .env.local.",
+    "No AI credentials. Set GOOGLE_GENERATIVE_AI_API_KEY in .env.local.",
   );
-}
-
-function getFallbackModel(): LanguageModel | null {
-  if (!FALLBACK_MODEL_ID) return null;
-  if (FALLBACK_MODEL_ID.startsWith("claude") && process.env.ANTHROPIC_API_KEY) {
-    return anthropic(FALLBACK_MODEL_ID);
-  }
-  return null;
 }
 
 const LANG_LABEL: Record<string, string> = {
@@ -75,79 +72,7 @@ DO: vary sentence length deliberately — mix short punchy sentences (3-8 words)
 
 If writing in Russian, also avoid: "в современном мире", "в эпоху", "стоит отметить", "в данной статье", "следует подчеркнуть", "однако следует помнить", "тем не менее", "таким образом" as conclusion-fillers.
 
-If writing in Turkish, also avoid: "günümüzde", "bu makalede ele alacağız", "belirtmek gerekir ki", "sonuç olarak" as a generic closer.
-
-CRITICAL — RESPONSE FORMAT:
-Return ONLY a single JSON object matching the schema. NO markdown fences. NO reasoning steps. NO "Question: ..." or "Constraint 1: ..." or "Let me think step by step" preambles. Start your response with { and end with }. Nothing else.`;
-
-/**
- * Generate text via Gemma 4 + parse JSON + validate against Zod schema.
- *
- * Gemma 4 reasons explicitly (thoughtsTokenCount comes back > 0), so we give
- * it generous room: 16000 maxOutputTokens. The visible text intermixes
- * reasoning with a fenced ```json``` block — extractJson finds it.
- *
- * Escape hatch: if a fallback model (Claude) is configured, use it on
- * failure. By default no fallback.
- */
-async function generateWithSchema<T extends z.ZodTypeAny>(args: {
-  schema: T;
-  system: string;
-  prompt: string;
-  temperature?: number;
-}): Promise<z.infer<T>> {
-  const { schema, system, prompt, temperature = 0.7 } = args;
-
-  try {
-    const { text } = await generateText({
-      model: getModel(),
-      system,
-      prompt,
-      temperature,
-      maxOutputTokens: 16000,
-      maxRetries: 1,
-    });
-    console.log(`[mnemo:ai] Gemma raw output (first 300 chars): ${text.slice(0, 300)}`);
-    console.log(`[mnemo:ai] Gemma raw output (last 300 chars): ${text.slice(-300)}`);
-    const cleaned = extractJson(text);
-    console.log(`[mnemo:ai] Extracted JSON (first 300 chars): ${cleaned.slice(0, 300)}`);
-    const parsed = JSON.parse(cleaned);
-    return schema.parse(parsed);
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.warn("[mnemo:ai] Gemma generation failed:", msg.slice(0, 200));
-
-    const fb = getFallbackModel();
-    if (fb) {
-      console.warn("[mnemo:ai] using fallback model");
-      const { object } = await generateObject({
-        model: fb,
-        schema,
-        system,
-        prompt,
-        temperature,
-      });
-      return object as z.infer<T>;
-    }
-    throw err;
-  }
-}
-
-const COURSE_OUTLINE_TEMPLATE = `{
-  "title": "engaging 3-8 word course title",
-  "description": "2-3 sentence motivating description of what the learner will gain",
-  "emoji": "📚",
-  "lessons": [
-    {
-      "title": "memorable 2-6 word lesson title",
-      "summary": "one sentence summary of the takeaway",
-      "objectives": [
-        "observable behavior the learner will demonstrate",
-        "second observable behavior"
-      ]
-    }
-  ]
-}`;
+If writing in Turkish, also avoid: "günümüzde", "bu makalede ele alacağız", "belirtmek gerekir ki", "sonuç olarak" as a generic closer.`;
 
 const PROGRESSION_RULES = `LESSON PROGRESSION — the most important rule:
 
@@ -193,20 +118,16 @@ Design ${depth} lessons that take the learner from where they are now to real co
 - Have a one-sentence summary of the takeaway
 - List 2-4 concrete learning objectives written as observable behaviors ("Identify X", "Apply Y to Z"), not vague verbs ("understand", "be aware of")
 
-Pick a single emoji that represents the course visually.
+Pick a single emoji that represents the course visually.`;
 
-OUTPUT JSON MATCHING EXACTLY THIS SHAPE (use these exact field names, English keys, content text in ${langLabel}):
-
-${COURSE_OUTLINE_TEMPLATE}
-
-Field names MUST be: "title", "description", "emoji", "lessons", and inside each lesson: "title", "summary", "objectives". Do NOT rename them. Output ONLY the JSON object, nothing else.`;
-
-  const outline = await generateWithSchema({
+  const { object } = await generateObject({
+    model: getModel(),
     schema: CourseOutlineSchema,
     system,
     prompt,
+    temperature: 0.7,
   });
-  return { ...outline, lessons: outline.lessons.slice(0, depth) };
+  return { ...object, lessons: object.lessons.slice(0, depth) };
 }
 
 const LESSON_PEDAGOGY = `PEDAGOGY — the most important rule:
@@ -277,34 +198,38 @@ Produce:
 1. 2-4 content blocks teaching ONLY what this lesson's objectives require. ONE new idea per block. Short blocks (2-4 sentences each). Mix "concept" blocks and "example" blocks. The FIRST block hooks — surprising claim, vivid question, or a concrete moment. NOT a definition.
 2. 4-6 exercises that test EXACTLY what the blocks above just taught. USE A MIX of types — include at least 3 different exercise types from: multiple_choice, fill_blank, true_false, matching, order. Each exercise must be answerable from the blocks alone — never from outside knowledge.
 
-OUTPUT JSON MATCHING EXACTLY THIS SHAPE:
-
-{
-  "blocks": [
-    {"type": "concept", "heading": "...", "body": "...", "keyPoints": ["..."]},
-    {"type": "example", "heading": "...", "body": "..."}
-  ],
-  "exercises": [
-    {"type": "multiple_choice", "question": "...", "options": ["a","b","c","d"], "correctIndex": 0, "explanation": "..."},
-    {"type": "fill_blank", "sentence": "Word with ___ blank.", "answer": "...", "acceptableAlternatives": [], "explanation": "..."},
-    {"type": "true_false", "statement": "...", "isTrue": true, "explanation": "..."},
-    {"type": "matching", "prompt": "...", "pairs": [{"left": "...", "right": "..."}]},
-    {"type": "order", "prompt": "...", "items": ["step 1", "step 2"], "explanation": "..."}
-  ]
-}
-
-Use EXACTLY these field names. Each exercise object must have a "type" discriminator field. Output ONLY the JSON, nothing else.
-
 Quality bar:
 - Multiple choice: all 4 options plausible. The wrong ones are real misconceptions a learner might hold, not strawmen.
 - Fill blank: the blank tests a concept, not trivia. Use ONE ___ per sentence. The answer is one or two words.
 - True/false: the answer is defensible from the content. No ambiguity, no opinion.
-- Matching: pairs are conceptually related. 3-5 pairs.
-- Order: a real sequence the learner has to reason through. Items in the CORRECT order.`;
+- Matching: pairs are conceptually related. EXACTLY 3-5 pairs (never fewer than 3, never more than 5).
+- Order: a real sequence the learner has to reason through. EXACTLY 3-5 items in the CORRECT order (never more than 5). If the sequence is naturally longer, pick the 5 most essential steps.`;
 
-  return generateWithSchema({
-    schema: LessonContentSchema,
-    system,
-    prompt,
+  // LessonContentSchema has a discriminated union which Gemini's strict
+  // responseSchema mode mistranslates. Show the model an EXACT JSON
+  // template in the prompt — much more reliable than schema mode for our
+  // shape. Gemini Flash returns this in ~5-10s.
+  const jsonTemplate = `{
+  "blocks": [
+    { "type": "concept", "heading": "...", "body": "...", "keyPoints": ["...", "..."] },
+    { "type": "example", "heading": "...", "body": "..." }
+  ],
+  "exercises": [
+    { "type": "multiple_choice", "question": "...", "options": ["a", "b", "c", "d"], "correctIndex": 0, "explanation": "..." },
+    { "type": "fill_blank", "sentence": "Text with ___ blank.", "answer": "...", "acceptableAlternatives": [], "explanation": "..." },
+    { "type": "true_false", "statement": "...", "isTrue": true, "explanation": "..." },
+    { "type": "matching", "prompt": "Match...", "pairs": [{ "left": "A", "right": "1" }, { "left": "B", "right": "2" }, { "left": "C", "right": "3" }] },
+    { "type": "order", "prompt": "Order these...", "items": ["first step", "second step", "third step", "fourth step"], "explanation": "..." }
+  ]
+}`;
+  const { text } = await generateText({
+    model: getModel(),
+    system: system + `\n\nOUTPUT FORMAT — return ONLY a JSON object matching EXACTLY this shape (use these exact field names):\n\n${jsonTemplate}\n\nNo markdown fences, no prose, just the JSON object. Each exercise object MUST have a "type" string discriminator.`,
+    prompt: prompt + `\n\nReturn the JSON object now matching the shape shown above.`,
+    temperature: 0.7,
+    maxOutputTokens: 8000,
   });
+  const cleaned = extractJson(text);
+  const parsed = JSON.parse(cleaned);
+  return LessonContentSchema.parse(parsed);
 }

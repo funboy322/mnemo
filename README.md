@@ -17,28 +17,29 @@ Three pillars:
 
 1. **Free even at scale.** Gemma 4 self-hosts. Schools without API budgets can deploy the same backend that powers the demo.
 2. **Any topic, any photo.** Text input *or* multimodal: snap a textbook page, a diagram, a piece of code, an object. Gemma 4's vision generates a course grounded in what's there. Killer feature for under-resourced classrooms with paper textbooks and no internet at home.
-3. **140+ languages.** Lessons generate natively in the learner's language — Russian, Turkish, Hindi, Swahili, languages large APIs sometimes underserve.
+3. **140+ languages.** Lessons generate natively in the learner's language — Russian, Turkish, Hindi, Swahili, the languages other learning apps underserve. UI in 6 (en/ru/tr/es/hi/ar with RTL); content in 140+.
 
 ## Stack
 
 - **Next.js 16** (App Router, Turbopack, Node 24)
-- **AI SDK v6** + Vercel AI Gateway → Claude Sonnet 4.6 (text) + **Gemma 4 26B-a4b-it** (vision, via Google AI Studio)
+- **AI SDK v6** → **Gemma 4 26B-a4b-it** (multimodal vision, photo→course) + **Gemini 2.5 Flash** (fast text routing)
 - **Tailwind CSS v4** + Onest type
 - **libSQL** (Turso for prod, file:// for dev) + Drizzle ORM
 - **Clerk** (optional auth, guest mode by default)
 - **Zod** for structured output
+
+One API key powers everything: Google AI Studio gives free access to both Gemma 4 (open-weights, the multimodal differentiator) and Gemini Flash (closed, the speed lane). Same provider, complementary roles.
 
 ## Quickstart
 
 ```bash
 npm install
 cp .env.local.example .env.local
-# Required: AI_GATEWAY_API_KEY (or ANTHROPIC_API_KEY) for text generation
-# Required for photo→course: GOOGLE_GENERATIVE_AI_API_KEY (free at https://aistudio.google.com/apikey)
+# Required: GOOGLE_GENERATIVE_AI_API_KEY (free at https://aistudio.google.com/apikey)
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). First-time onboarding (3 steps), then type a topic or upload a photo. Courses stream live as Gemma writes.
+Open [http://localhost:3000](http://localhost:3000). First-time onboarding (3 steps), then type a topic or upload a photo. Courses stream live as the model writes.
 
 ## The photo → course feature
 
@@ -78,11 +79,11 @@ components/
   create-tabs.tsx                — Topic | Photo switch on landing
 lib/
   schemas.ts                     — Zod for AI structured output
-  ai.ts, ai-stream.ts            — text generation (Claude or Gemma)
+  ai.ts, ai-stream.ts            — text generation (Gemini Flash default, Gemma 4 opt-in)
   ai-vision.ts                   — Gemma 4 vision pipeline
   db.ts, db-schema.ts            — libsql + Drizzle (works on file:// or libsql://)
   repository.ts                  — async DB layer
-  i18n.ts                        — 3 locales (en/ru/tr)
+  i18n.ts                        — 6 locales (en/ru/tr/es/hi/ar — Arabic is RTL)
 ```
 
 ## Exercise types
@@ -107,7 +108,6 @@ turso db tokens create mnemo    # → TURSO_AUTH_TOKEN
 # 3. Deploy
 npm i -g vercel
 vercel link
-vercel env add AI_GATEWAY_API_KEY production
 vercel env add GOOGLE_GENERATIVE_AI_API_KEY production
 vercel env add TURSO_DATABASE_URL production
 vercel env add TURSO_AUTH_TOKEN production
@@ -120,27 +120,23 @@ Schema bootstraps automatically on first request — no manual migrations.
 
 | Variable | Required | Purpose |
 |---|---|---|
-| `AI_GATEWAY_API_KEY` | yes* | Vercel AI Gateway — text generation via Claude Sonnet 4.6 |
-| `ANTHROPIC_API_KEY` | alternative | Direct Anthropic, if no Gateway |
-| `GOOGLE_GENERATIVE_AI_API_KEY` | for photo→course | Google AI Studio — Gemma 4 vision |
-| `AI_MODEL` | no | Override text model |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | yes | Google AI Studio — powers both Gemma 4 vision and Gemini Flash text |
+| `AI_MODEL` | no | Override text model (default `gemini-2.5-flash`; set to `gemma-4-26b-a4b-it` to run text through Gemma too) |
 | `AI_VISION_MODEL` | no | Override vision model (default `gemma-4-26b-a4b-it`) |
-| `AI_PRIMARY=gemma` | no | Use Gemma 4 for text too (less reliable, see notes) |
+| `ANTHROPIC_API_KEY` | fallback | Used only if no Google key is set |
 | `TURSO_DATABASE_URL` | prod | libsql connection string |
 | `TURSO_AUTH_TOKEN` | prod | Turso auth |
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | no | Enables sign-in. Guest mode without it. |
 | `CLERK_SECRET_KEY` | no | Pair with above |
 
-*One AI text key required.
+## Why Gemma 4 for vision + Gemini Flash for text?
 
-## Why Claude for text + Gemma 4 for vision?
+Honest engineering note. We picked each model where it earns its keep:
 
-Honest engineering note. Gemma 4 text generation works great via Vercel AI Gateway, but the AI SDK's strict-schema mode for `generateObject` doesn't yet pass cleanly to Gemma 4 through Gateway routing (Novita/Parasail providers). So:
+- **Photo → course** uses **Gemma 4 26B-a4b-it** via Google AI Studio. This is the open-weights multimodal differentiator: a free, self-hostable model that reads a textbook page or a diagram and grounds a course in what's actually there. No closed API matches this combination of open weights + multimodal at zero cost.
+- **Topic → course** (typing a topic) uses **Gemini 2.5 Flash**. Gemma 4's reasoning trace is exactly what makes it great for image understanding, but it adds 60–120s of think-time per text course — too slow for the "type → seconds → study" UX. Gemini Flash returns the same Zod-validated course in ~10s.
 
-- **Text courses (typing a topic)** use Claude Sonnet 4.6 — battle-tested with strict Zod schemas and discriminated unions for exercise types.
-- **Photo → course (Gemma 4 multimodal)** uses Google AI Studio direct, with `generateText` + manual JSON parse + Zod validation. This works reliably and is the genuine Gemma 4 showcase: open-weights multimodal vision is exactly where it earns its keep.
-
-Set `AI_PRIMARY=gemma` to use Gemma 4 for text too — quality is high, but expect occasional JSON parse retries until the SDK improves Gemma support.
+Both models live behind the same `GOOGLE_GENERATIVE_AI_API_KEY`. Set `AI_MODEL=gemma-4-26b-a4b-it` to route text through Gemma too — the code path is identical, just slower.
 
 ## Scripts
 
