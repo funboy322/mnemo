@@ -90,9 +90,9 @@ export function PhotoUpload() {
     if (inputRef.current) inputRef.current.value = "";
   }
 
-  // While Gemma 4 is reading the photo, show the same staged-loading UI as
-  // the text-course generation flow. Looks consistent and gives the user
-  // real feedback during the 30-60s wait.
+  // While Gemma 4 is reading the photo, reuse the same staged-loading UI
+  // as the text-course generation flow — consistent and gives the user
+  // real feedback during the 15-40s wait.
   if (loading) {
     return (
       <div className="space-y-4">
@@ -103,8 +103,8 @@ export function PhotoUpload() {
           done={false}
           error={null}
         />
-        <p className="text-xs text-zinc-500 text-center">
-          Gemma 4's vision is reading the image. Don't close this tab.
+        <p className="font-mono text-[11px] text-ink-muted text-center tracking-[0.06em]">
+          Gemma 4 vision is reading the image. Don't close this tab.
         </p>
       </div>
     );
@@ -122,9 +122,6 @@ export function PhotoUpload() {
           if (f) void handleFile(f);
         }}
       />
-      {/* Mobile-only direct-to-camera input. `capture="environment"` opens
-          the rear camera on iOS/Android. Hidden on desktop where the regular
-          file picker is the right affordance. */}
       <input
         ref={cameraRef}
         type="file"
@@ -161,63 +158,56 @@ export function PhotoUpload() {
               }
             }}
             className={cn(
-              "w-full rounded-card border-2 border-dashed p-8 sm:p-14 text-center transition-all bg-white cursor-pointer",
-              dragOver
-                ? "border-brand-500 bg-brand-50"
-                : "border-zinc-300 hover:border-brand-300",
+              "w-full rounded-[16px] border border-dashed p-8 sm:p-14 text-center transition-colors bg-surface cursor-pointer",
+              dragOver ? "border-ink" : "border-rule hover:border-ink-muted",
             )}
           >
-            <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-100 text-brand-700 mb-4">
-              <ImageIcon className="h-7 w-7" />
-            </div>
-            <p className="font-bold text-zinc-900 text-base sm:text-lg">
+            <ImageIcon className="h-7 w-7 mx-auto text-ink-muted mb-4" />
+            <p className="font-display font-medium text-ink text-[15px] sm:text-[18px]">
               Drop a photo, or tap to choose
             </p>
-            <p className="text-sm text-zinc-500 mt-2 leading-relaxed max-w-md mx-auto">
-              Textbook page, diagram, chart, object — Gemma 4 reads it and builds a course
+            <p className="text-[13px] sm:text-[14px] text-ink-soft mt-2 leading-relaxed max-w-md mx-auto">
+              Textbook page, diagram, chart, object. Gemma 4 reads it and builds a course
               grounded in what's there.
             </p>
-            <div className="mt-4 inline-flex items-center gap-1.5 text-xs uppercase tracking-wider text-zinc-400 font-bold">
-              <Camera className="h-3.5 w-3.5" />
+            <div className="mt-4 font-mono text-[10.5px] tracking-[0.16em] text-ink-muted uppercase">
               JPEG · PNG · WebP up to 8 MB
             </div>
           </div>
 
-          {/* Mobile-only direct camera button — clearer affordance on phones */}
+          {/* Mobile-only direct camera button */}
           <button
             type="button"
             onClick={() => cameraRef.current?.click()}
-            className="sm:hidden w-full h-12 rounded-2xl bg-zinc-900 text-white font-bold inline-flex items-center justify-center gap-2 active:bg-zinc-800 transition-colors btn-3d"
+            className="sm:hidden btn-ink w-full h-12 inline-flex items-center justify-center gap-2"
           >
-            <Camera className="h-5 w-5" />
+            <Camera className="h-4 w-4" />
             Use camera
           </button>
         </div>
       ) : (
-        <div className="rounded-card bg-white border-2 border-zinc-200 p-4 sm:p-5 shadow-sm">
+        <div className="card-quiet p-4 sm:p-5">
           <div className="relative">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={preview}
               alt="Selected"
-              className="w-full max-h-80 object-contain rounded-2xl bg-zinc-50"
+              className="w-full max-h-80 object-contain rounded-[12px] bg-bone"
             />
             {!loading && (
               <button
                 type="button"
                 onClick={reset}
-                className="absolute top-2 right-2 h-9 w-9 rounded-full bg-zinc-900/70 text-white flex items-center justify-center hover:bg-zinc-900 transition-colors"
+                className="absolute top-2 right-2 h-9 w-9 rounded-full bg-ink/80 text-surface flex items-center justify-center hover:bg-ink transition-colors"
                 aria-label="Remove photo"
               >
-                <X className="h-5 w-5" />
+                <X className="h-4 w-4" />
               </button>
             )}
           </div>
 
           <div className="mt-4">
-            <p className="text-xs uppercase tracking-wider font-bold text-zinc-400 mb-1.5 px-1">
-              Optional hint
-            </p>
+            <p className="eyebrow-tight mb-2 px-1">Optional hint</p>
             <input
               type="text"
               value={hint}
@@ -225,38 +215,35 @@ export function PhotoUpload() {
               placeholder="e.g. focus on the diagram, ignore the page number"
               disabled={loading}
               maxLength={200}
-              className="w-full h-11 px-4 rounded-xl border-2 border-zinc-200 bg-white text-zinc-900 text-sm placeholder:text-zinc-400 focus:border-brand-400 focus:ring-4 focus:ring-brand-200/50 focus:outline-none transition-all"
+              className="w-full h-11 px-4 rounded-[12px] border border-rule bg-surface text-ink text-[14px] placeholder:text-ink-muted focus:border-ink focus:outline-none transition-colors"
             />
           </div>
         </div>
       )}
 
       {error && (
-        <div className="text-sm text-red-600 font-medium animate-shake">{error}</div>
+        <div className="text-[13.5px] text-ink-soft border-l-2 border-ink pl-3 py-1 animate-shake">
+          {error}
+        </div>
       )}
 
-      <Button
-        type="submit"
-        size="lg"
-        disabled={loading || !file || !userId}
-        className="w-full"
-      >
+      <Button type="submit" size="lg" disabled={loading || !file || !userId} className="w-full">
         {loading ? (
           <>
-            <Loader2 className="h-5 w-5 animate-spin" />
-            Gemma 4 is reading your photo...
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Reading your photo...
           </>
         ) : (
           <>
-            <Sparkles className="h-5 w-5" />
+            <Sparkles className="h-4 w-4" />
             Build course from photo
           </>
         )}
       </Button>
 
       {loading && (
-        <p className="text-sm text-zinc-500 text-center animate-pulse">
-          Multimodal generation takes 15–40 seconds.
+        <p className="font-mono text-[11px] text-ink-muted text-center tracking-[0.06em]">
+          Multimodal generation · 15–40 seconds
         </p>
       )}
     </form>

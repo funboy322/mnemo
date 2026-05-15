@@ -1,23 +1,29 @@
 "use client";
 import * as React from "react";
-import { Sparkles, Check, Loader2, Brain } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import type { CourseOutline } from "@/lib/schemas";
 import { useT } from "./locale-provider";
 
 type Partial<T> = { [P in keyof T]?: T[P] };
 
 /**
- * Stages shown to the user during Gemma 4's long reasoning pass. These are
- * advisory — Gemma's `thoughtsTokenCount` is real, but we don't get
- * progress signals from the API. The messages cycle by elapsed time so the
- * user sees movement instead of a dead spinner.
+ * StreamingPreview — Quiet direction.
+ *
+ * Shows the course outline streaming in lesson by lesson. The previous
+ * version had a saturated white card with a Brain icon, brand-tinted
+ * row backgrounds, and a "Powered by Gemma 4" badge. Quiet replaces
+ * with a flat surface card, a single ink "drafting" line at the top, no
+ * icons, ink-on-bone lesson rows, and a quiet footnote.
+ *
+ * Stages of generation cycle by elapsed time so the user sees movement
+ * instead of a dead spinner.
  */
 const STAGES: { atMs: number; key: keyof Stages }[] = [
   { atMs: 0, key: "reading" },
-  { atMs: 10_000, key: "reasoning" },
-  { atMs: 28_000, key: "drafting" },
-  { atMs: 50_000, key: "polishing" },
-  { atMs: 80_000, key: "finishing" },
+  { atMs: 6_000, key: "reasoning" },
+  { atMs: 14_000, key: "drafting" },
+  { atMs: 25_000, key: "polishing" },
+  { atMs: 40_000, key: "finishing" },
 ];
 
 type Stages = {
@@ -29,61 +35,67 @@ type Stages = {
 };
 
 const STAGE_COPY_EN: Stages = {
-  reading: "Reading your topic...",
-  reasoning: "Reasoning through curriculum design...",
-  drafting: "Drafting lesson titles...",
-  polishing: "Polishing the wording...",
-  finishing: "Almost done, finalizing JSON...",
+  reading: "Reading your topic",
+  reasoning: "Designing the curriculum",
+  drafting: "Drafting lesson titles",
+  polishing: "Polishing the wording",
+  finishing: "Finalizing",
 };
 
 const STAGE_COPY_RU: Stages = {
-  reading: "Разбираю твою тему...",
-  reasoning: "Проектирую учебный план...",
-  drafting: "Пишу названия уроков...",
-  polishing: "Шлифую формулировки...",
-  finishing: "Почти всё, финализирую структуру...",
+  reading: "Разбираю тему",
+  reasoning: "Проектирую учебный план",
+  drafting: "Пишу названия уроков",
+  polishing: "Шлифую формулировки",
+  finishing: "Завершаю",
 };
 
 const STAGE_COPY_TR: Stages = {
-  reading: "Konuyu okuyorum...",
-  reasoning: "Müfredat tasarımını düşünüyorum...",
-  drafting: "Ders başlıklarını yazıyorum...",
-  polishing: "İfadeleri rötuşluyorum...",
-  finishing: "Neredeyse bitti, sonlandırıyorum...",
+  reading: "Konuyu okuyorum",
+  reasoning: "Müfredatı tasarlıyorum",
+  drafting: "Başlıkları yazıyorum",
+  polishing: "İfadeleri rötuşluyorum",
+  finishing: "Sonlandırıyorum",
 };
 
 const STAGE_COPY_ES: Stages = {
-  reading: "Leyendo tu tema...",
-  reasoning: "Diseñando el plan de estudios...",
-  drafting: "Redactando los títulos de las lecciones...",
-  polishing: "Puliendo el texto...",
-  finishing: "Casi listo, finalizando...",
+  reading: "Leyendo el tema",
+  reasoning: "Diseñando el currículo",
+  drafting: "Redactando títulos",
+  polishing: "Puliendo el texto",
+  finishing: "Finalizando",
 };
 
 const STAGE_COPY_HI: Stages = {
-  reading: "आपका विषय पढ़ रहा हूँ...",
-  reasoning: "पाठ्यक्रम डिज़ाइन कर रहा हूँ...",
-  drafting: "पाठ शीर्षक लिख रहा हूँ...",
-  polishing: "शब्दों को निखार रहा हूँ...",
-  finishing: "बस हो गया, अंतिम रूप दे रहा हूँ...",
+  reading: "विषय पढ़ रहा हूँ",
+  reasoning: "पाठ्यक्रम डिज़ाइन कर रहा हूँ",
+  drafting: "शीर्षक लिख रहा हूँ",
+  polishing: "शब्दों को निखार रहा हूँ",
+  finishing: "अंतिम रूप दे रहा हूँ",
 };
 
 const STAGE_COPY_AR: Stages = {
-  reading: "أقرأ موضوعك...",
-  reasoning: "أصمم خطة المنهج...",
-  drafting: "أكتب عناوين الدروس...",
-  polishing: "أصقل الصياغة...",
-  finishing: "اقتربنا من النهاية، أُنهي البنية...",
+  reading: "أقرأ موضوعك",
+  reasoning: "أصمم المنهج",
+  drafting: "أكتب العناوين",
+  polishing: "أصقل الصياغة",
+  finishing: "أُنهي",
 };
 
 function getStageCopy(locale: string): Stages {
   switch (locale) {
-    case "ru": return STAGE_COPY_RU;
-    case "tr": return STAGE_COPY_TR;
-    case "es": return STAGE_COPY_ES;
-    case "hi": return STAGE_COPY_HI;
-    case "ar": return STAGE_COPY_AR;
-    default: return STAGE_COPY_EN;
+    case "ru":
+      return STAGE_COPY_RU;
+    case "tr":
+      return STAGE_COPY_TR;
+    case "es":
+      return STAGE_COPY_ES;
+    case "hi":
+      return STAGE_COPY_HI;
+    case "ar":
+      return STAGE_COPY_AR;
+    default:
+      return STAGE_COPY_EN;
   }
 }
 
@@ -100,7 +112,6 @@ function useStage(active: boolean, locale: string): { label: string; index: numb
     return () => clearInterval(id);
   }, [active]);
 
-  // Pick the latest stage whose threshold has passed
   let stage: keyof Stages = "reading";
   let index = 0;
   for (let i = 0; i < STAGES.length; i++) {
@@ -136,104 +147,83 @@ export function StreamingPreview({
 
   return (
     <div className="reveal" style={{ animationDelay: "0ms" }}>
-      <div className="rounded-card bg-white border-2 border-zinc-200 p-6 sm:p-8 relative overflow-hidden">
+      <div className="card-quiet p-6 sm:p-8 relative overflow-hidden">
         {/* Status line */}
-        <div className="flex items-center gap-2 mb-2">
+        <div className="eyebrow flex items-center gap-2">
           {!done && !error ? (
             <>
-              <Brain className="h-4 w-4 text-brand-500 animate-pulse" />
-              <span className="text-xs uppercase tracking-wider font-bold text-brand-700">
-                Gemma 4 · open-weights
-              </span>
+              <Loader2 className="h-3 w-3 animate-spin" />
+              <span>{stage.label}</span>
             </>
           ) : error ? (
-            <span className="text-xs uppercase tracking-wider font-bold text-red-600">
-              {error}
-            </span>
+            <span className="text-ink-soft normal-case tracking-normal">{error}</span>
           ) : (
             <>
-              <Check className="h-4 w-4 text-brand-600" />
-              <span className="text-xs uppercase tracking-wider font-bold text-brand-600">
-                {t.lessonCompleted} · {topic}
-              </span>
+              <Check className="h-3 w-3 text-green" strokeWidth={3} />
+              <span className="text-green">ready · {topic}</span>
             </>
           )}
         </div>
 
-        {/* Stage message (rotates while generating) */}
-        {!done && !error && (
-          <div className="flex items-center gap-2 mb-6 min-h-[1.25rem]">
-            <Loader2 className="h-3.5 w-3.5 animate-spin text-zinc-400" />
-            <span
-              key={stage.index}
-              className="text-sm text-zinc-600 animate-slide-up"
-            >
-              {stage.label}
-            </span>
-          </div>
-        )}
-
         {/* Header: emoji + title + description */}
-        <div className="flex items-start gap-4 mb-6 min-h-[80px]">
-          <div className="text-5xl shrink-0 w-12 h-12 flex items-center justify-center">
+        <div className="flex items-start gap-4 mt-5 sm:mt-6 min-h-[68px]">
+          <div className="text-[40px] sm:text-[48px] shrink-0 leading-none">
             {partial?.emoji ? (
               <span className="animate-pop inline-block">{partial.emoji}</span>
             ) : (
-              <span className="text-3xl text-zinc-300">✦</span>
+              <span className="text-ink-muted">·</span>
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-zinc-900 min-h-[2.5rem]">
+            <h2 className="font-display font-medium text-[22px] sm:text-[28px] leading-[1.1] tracking-[-0.02em] text-ink min-h-[1.5em]">
               {partial?.title ?? (
-                <span className="inline-block h-8 w-3/4 rounded bg-zinc-100 animate-pulse align-middle" />
+                <span className="inline-block h-7 w-3/4 rounded bg-rule animate-pulse align-middle" />
               )}
             </h2>
-            <p className="text-sm sm:text-base text-zinc-600 mt-2 leading-relaxed min-h-[1.5rem]">
+            <p className="text-[13.5px] sm:text-[14.5px] text-ink-soft mt-2 leading-relaxed">
               {partial?.description ?? (
                 <>
-                  <span className="inline-block h-3 w-full rounded bg-zinc-100 animate-pulse" />
-                  <span className="inline-block h-3 w-5/6 rounded bg-zinc-100 animate-pulse mt-1" />
+                  <span className="inline-block h-3 w-full rounded bg-rule animate-pulse" />
+                  <span className="inline-block h-3 w-5/6 rounded bg-rule animate-pulse mt-1" />
                 </>
               )}
             </p>
           </div>
         </div>
 
-        {/* Lesson slots */}
-        <div className="space-y-2">
+        {/* Lesson rows — flat ink number + title */}
+        <div className="mt-6 sm:mt-7 space-y-2">
           {Array.from({ length: depth }).map((_, i) => {
             const lesson = lessons[i];
             const ready = !!lesson?.title;
-            const isLoading = ready && !lesson?.summary;
             return (
               <div
                 key={i}
-                className={`flex items-start gap-3 p-3 rounded-2xl border-2 transition-all ${
-                  ready ? "border-brand-100 bg-brand-50/30" : "border-zinc-100 bg-zinc-50/50"
+                className={`flex items-start gap-3 py-2.5 border-b border-rule last:border-b-0 transition-colors ${
+                  ready ? "" : "opacity-50"
                 }`}
               >
                 <span
-                  className={`h-7 w-7 shrink-0 inline-flex items-center justify-center rounded-lg text-xs font-black ${
-                    ready ? "bg-brand-500 text-white" : "bg-zinc-200 text-zinc-400"
+                  className={`font-mono text-[11px] font-medium pt-1 shrink-0 w-5 ${
+                    ready ? "text-ink" : "text-ink-muted"
                   }`}
                 >
-                  {i + 1}
+                  {String(i + 1).padStart(2, "0")}
                 </span>
                 <div className="flex-1 min-w-0">
                   {ready ? (
                     <div className="animate-slide-up">
-                      <p className="font-bold text-sm text-zinc-900">{lesson.title}</p>
+                      <p className="font-display font-medium text-[14.5px] text-ink leading-tight">
+                        {lesson.title}
+                      </p>
                       {lesson.summary && (
-                        <p className="text-xs text-zinc-600 mt-0.5 leading-relaxed">
+                        <p className="text-[12.5px] text-ink-soft mt-1 leading-[1.45]">
                           {lesson.summary}
                         </p>
                       )}
-                      {isLoading && (
-                        <span className="inline-block h-2 w-32 rounded bg-zinc-100 animate-pulse mt-1.5" />
-                      )}
                     </div>
                   ) : (
-                    <span className="inline-block h-3 w-1/2 rounded bg-zinc-100 animate-pulse" />
+                    <span className="inline-block h-3 w-1/2 rounded bg-rule animate-pulse" />
                   )}
                 </div>
               </div>
@@ -242,8 +232,8 @@ export function StreamingPreview({
         </div>
 
         {!done && !error && (
-          <p className="mt-5 text-[11px] uppercase tracking-wider text-zinc-400 text-center font-bold">
-            Open-weights reasoning — typically 60s. Costs nothing to self-host.
+          <p className="mt-6 font-mono text-[10.5px] tracking-[0.16em] text-ink-muted text-center uppercase">
+            open weights · self-hostable · {t.poweredByGemma}
           </p>
         )}
       </div>

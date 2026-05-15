@@ -3,20 +3,15 @@ import { ImageResponse } from "next/og";
 export const runtime = "edge";
 
 /**
- * Kaggle submission thumbnail — "before / after" variant (560×280).
+ * Kaggle submission thumbnail — Quiet "before / after" variant (560×280).
  *
- * Tells the photo→course story in one frame:
- *   [textbook page]  →[Gemma 4]→  [course path of circular lesson nodes]
+ * Left: textbook page mock (warm cream, ink lines). Middle: a small
+ * mono caps "gemma 4 →" tag as the visual hinge. Right: a course path
+ * mock with flat lesson circles. Bottom: line-art knot mark + wordmark
+ * + mono caps subtitle.
  *
- * Visit /thumbnail-split → right-click → "Save image as..." → upload to Kaggle.
- *
- * Design choices:
- * - Left card mimics a textbook page (diagonal lines = paragraph rivers,
- *   a small "diagram" rectangle, and a title bar). Conveys "real-world
- *   input" without needing an external asset URL.
- * - Right card mimics the actual app's lesson path: 4 circular nodes in
- *   a Duolingo-style zigzag with the title strip on top.
- * - Centre Gemma chip is the visual hinge — same green as the brand.
+ * Quiet rules followed: one accent color (green), 1px rule borders, no
+ * shadows, no emojis, no icons.
  */
 export async function GET() {
   return new ImageResponse(
@@ -27,69 +22,92 @@ export async function GET() {
           height: "100%",
           display: "flex",
           flexDirection: "column",
-          background: "linear-gradient(180deg, #f4faf6 0%, #e6f5ec 100%)",
+          background: "#fbfaf6",
           fontFamily: "system-ui, sans-serif",
           position: "relative",
         }}
       >
-        {/* Main split row — takes most of the height */}
+        {/* Main split row */}
         <div
           style={{
             flex: 1,
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            padding: "20px 24px 0",
-            gap: "10px",
+            padding: "26px 28px 0",
+            gap: "12px",
           }}
         >
           {/* LEFT — textbook page mock */}
           <div
             style={{
-              width: "190px",
+              width: "180px",
               height: "180px",
-              background: "white",
+              background: "#ffffff",
               borderRadius: "10px",
-              border: "1.5px solid #e4e4e7",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
+              border: "1px solid #ebe6dc",
               padding: "14px",
               display: "flex",
               flexDirection: "column",
-              gap: "6px",
-              transform: "rotate(-2deg)",
+              gap: "8px",
             }}
           >
-            <div style={{ fontSize: "11px", fontWeight: 800, color: "#27272a", letterSpacing: "-0.01em", display: "flex" }}>
-              Chapter 4 · Photosynthesis
-            </div>
-            <div style={{ display: "flex", gap: "4px" }}>
-              <div style={{ height: "5px", width: "100%", background: "#e4e4e7", borderRadius: "2px" }} />
-            </div>
-            {/* Faux diagram */}
             <div
               style={{
-                background: "#dcfce7",
-                border: "1.5px solid #86efac",
+                fontFamily: "ui-monospace, monospace",
+                fontSize: "9.5px",
+                fontWeight: 500,
+                letterSpacing: "0.16em",
+                textTransform: "uppercase",
+                color: "#9a948a",
+                display: "flex",
+              }}
+            >
+              Chapter 4
+            </div>
+            <div
+              style={{
+                fontSize: "14px",
+                fontWeight: 500,
+                color: "#16140f",
+                letterSpacing: "-0.015em",
+                lineHeight: 1.2,
+                display: "flex",
+              }}
+            >
+              Photosynthesis
+            </div>
+            {/* Inline diagram block — leaf SVG */}
+            <div
+              style={{
+                marginTop: "4px",
+                height: "44px",
+                background: "#e7f3ec",
                 borderRadius: "6px",
-                height: "52px",
-                marginTop: "2px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                lineHeight: 1,
               }}
             >
-              <svg width="34" height="34" viewBox="0 0 24 24" style={{ display: "flex" }}>
+              <svg width="28" height="28" viewBox="0 0 24 24" style={{ display: "flex" }}>
                 <path
                   d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22l1-2.3c.5.12 1 .18 1.5.18C19 19.88 22 12.88 22 6.88c0 0-3-1.88-5-1.88-2 0-3.5 1-5 3z"
-                  fill="#16a34a"
+                  fill="#0d8a4a"
                 />
               </svg>
             </div>
-            {/* Faux paragraph lines */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "3px", marginTop: "4px" }}>
+            {/* Paragraph lines */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "4px", marginTop: "4px" }}>
               {[100, 92, 96, 70].map((w, i) => (
-                <div key={i} style={{ height: "4px", width: `${w}%`, background: "#e4e4e7", borderRadius: "2px" }} />
+                <div
+                  key={i}
+                  style={{
+                    height: "3px",
+                    width: `${w}%`,
+                    background: "#ebe6dc",
+                    borderRadius: "2px",
+                  }}
+                />
               ))}
             </div>
           </div>
@@ -100,38 +118,44 @@ export async function GET() {
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              gap: "6px",
+              gap: "8px",
             }}
           >
             <div
               style={{
-                padding: "5px 11px",
-                borderRadius: "999px",
-                background: "linear-gradient(135deg, #0a7c47 0%, #12b76a 100%)",
-                color: "white",
-                fontSize: "11px",
-                fontWeight: 800,
-                letterSpacing: "0.06em",
+                fontFamily: "ui-monospace, monospace",
+                fontSize: "10.5px",
+                fontWeight: 500,
+                letterSpacing: "0.16em",
                 textTransform: "uppercase",
+                color: "#0d8a4a",
                 display: "flex",
-                boxShadow: "0 4px 10px rgba(18, 183, 106, 0.35)",
               }}
             >
               Gemma 4
             </div>
-            {/* Arrow */}
             <div
               style={{
-                fontSize: "32px",
-                fontWeight: 900,
-                color: "#12b76a",
+                fontSize: "26px",
+                fontWeight: 400,
+                color: "#16140f",
                 lineHeight: 1,
                 display: "flex",
               }}
             >
               →
             </div>
-            <div style={{ fontSize: "9px", color: "#52525b", fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", display: "flex" }}>
+            <div
+              style={{
+                fontFamily: "ui-monospace, monospace",
+                fontSize: "9px",
+                color: "#9a948a",
+                fontWeight: 500,
+                letterSpacing: "0.18em",
+                textTransform: "uppercase",
+                display: "flex",
+              }}
+            >
               reads · plans
             </div>
           </div>
@@ -141,91 +165,129 @@ export async function GET() {
             style={{
               width: "210px",
               height: "180px",
-              background: "white",
+              background: "#ffffff",
               borderRadius: "10px",
-              border: "1.5px solid #e4e4e7",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
-              padding: "12px 10px",
+              border: "1px solid #ebe6dc",
+              padding: "14px 12px",
               display: "flex",
               flexDirection: "column",
-              gap: "6px",
+              gap: "8px",
             }}
           >
             <div
               style={{
-                fontSize: "11px",
-                fontWeight: 800,
-                color: "#0a7c47",
-                letterSpacing: "-0.01em",
+                fontFamily: "ui-monospace, monospace",
+                fontSize: "9.5px",
+                fontWeight: 500,
+                letterSpacing: "0.16em",
+                textTransform: "uppercase",
+                color: "#9a948a",
                 display: "flex",
-                alignItems: "center",
-                gap: "5px",
               }}
             >
-              <svg width="12" height="12" viewBox="0 0 24 24" style={{ display: "flex" }}>
-                <path
-                  d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22l1-2.3c.5.12 1 .18 1.5.18C19 19.88 22 12.88 22 6.88c0 0-3-1.88-5-1.88-2 0-3.5 1-5 3z"
-                  fill="#16a34a"
-                />
-              </svg>
+              5 lessons · beginner
+            </div>
+            <div
+              style={{
+                fontSize: "13px",
+                fontWeight: 500,
+                color: "#16140f",
+                letterSpacing: "-0.015em",
+                lineHeight: 1.2,
+                display: "flex",
+              }}
+            >
               Plant Energy Factory
             </div>
-            {/* Lesson nodes in a Duolingo-style zigzag */}
+            {/* Lesson nodes zigzag */}
             <div
               style={{
                 flex: 1,
-                position: "relative",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                gap: "4px",
+                gap: "5px",
                 paddingTop: "2px",
               }}
             >
-              <LessonNode color="#facc15" offset={-44} shape="star" border="#eab308" />
-              <LessonNode color="#facc15" offset={28} shape="star" border="#eab308" />
-              <LessonNode color="#12b76a" offset={-20} shape="play" border="#0a7c47" current />
-              <LessonNode color="#e4e4e7" offset={36} shape="lock" border="#d4d4d8" muted />
+              <Node state="completed" offset={-40} />
+              <Node state="completed" offset={24} />
+              <Node state="current" offset={-16} />
+              <Node state="locked" offset={32} />
             </div>
           </div>
         </div>
 
-        {/* Bottom brand strip */}
+        {/* Bottom: brand strip with rule divider */}
         <div
           style={{
+            margin: "0 28px",
+            paddingTop: "12px",
+            paddingBottom: "16px",
+            borderTop: "1px solid #ebe6dc",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            padding: "10px 24px 14px",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <svg width="22" height="22" viewBox="0 0 32 32" style={{ display: "flex" }}>
+              <path
+                d="M 5 26 L 5 6 L 16 20 L 27 6 L 27 26"
+                fill="none"
+                stroke="#16140f"
+                strokeWidth="2.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <circle cx="27" cy="6" r="2" fill="#0d8a4a" />
+            </svg>
             <div
               style={{
-                width: "26px",
-                height: "26px",
-                borderRadius: "7px",
-                background: "linear-gradient(135deg, #0a7c47 0%, #12b76a 100%)",
-                color: "white",
+                fontSize: "20px",
+                fontWeight: 600,
+                color: "#16140f",
+                letterSpacing: "-0.02em",
                 display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "18px",
-                fontWeight: 900,
-                fontStyle: "italic",
-                lineHeight: 1,
               }}
             >
-              M
-            </div>
-            <div style={{ fontSize: "22px", fontWeight: 900, color: "#18181b", letterSpacing: "-0.02em", display: "flex" }}>
               mnemo
             </div>
-            <div style={{ fontSize: "13px", fontWeight: 600, color: "#52525b", marginLeft: "6px", display: "flex" }}>
-              · Photograph any page. Get a course.
-            </div>
+            <span
+              style={{
+                fontFamily: "Georgia, serif",
+                fontStyle: "italic",
+                fontWeight: 400,
+                color: "#0d8a4a",
+                fontSize: "16px",
+                marginLeft: "6px",
+                display: "flex",
+              }}
+            >
+              photograph
+            </span>
+            <span
+              style={{
+                fontSize: "13px",
+                color: "#5b574e",
+                fontWeight: 500,
+                display: "flex",
+              }}
+            >
+              a page. get a course.
+            </span>
           </div>
-          <div style={{ fontSize: "10px", fontWeight: 700, color: "#71717a", letterSpacing: "0.08em", textTransform: "uppercase", display: "flex" }}>
+          <div
+            style={{
+              fontFamily: "ui-monospace, monospace",
+              fontSize: "10px",
+              fontWeight: 500,
+              letterSpacing: "0.16em",
+              textTransform: "uppercase",
+              color: "#9a948a",
+              display: "flex",
+            }}
+          >
             Gemma 4 · Apache 2.0
           </div>
         </div>
@@ -238,25 +300,16 @@ export async function GET() {
   );
 }
 
-function LessonNode({
-  color,
+function Node({
+  state,
   offset,
-  shape,
-  border,
-  current,
-  muted,
 }: {
-  color: string;
+  state: "completed" | "current" | "locked";
   offset: number;
-  shape: "star" | "play" | "lock";
-  border: string;
-  current?: boolean;
-  muted?: boolean;
 }) {
-  // Inline SVG icons — Satori can't always find an emoji font for ⭐/▶/🔒
-  // at edge runtime (twemoji CDN fetch sometimes times out). Inline SVGs
-  // render deterministically with no network dependency.
-  const iconFill = muted ? "#a1a1aa" : "white";
+  const fill = state === "completed" ? "#e7f3ec" : state === "current" ? "#0d8a4a" : "#fbfaf6";
+  const border = state === "completed" ? "#0d8a4a" : state === "current" ? "#0d8a4a" : "#ebe6dc";
+  const iconColor = state === "current" ? "#ffffff" : state === "completed" ? "#0d8a4a" : "#9a948a";
   return (
     <div
       style={{
@@ -266,35 +319,42 @@ function LessonNode({
     >
       <div
         style={{
-          width: "28px",
-          height: "28px",
+          width: "26px",
+          height: "26px",
           borderRadius: "999px",
-          background: color,
-          border: `2.5px solid ${border}`,
+          background: fill,
+          border: `1.5px solid ${border}`,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          boxShadow: current ? "0 0 0 4px rgba(18, 183, 106, 0.18)" : "none",
         }}
       >
-        {shape === "star" && (
-          <svg width="14" height="14" viewBox="0 0 24 24" style={{ display: "flex" }}>
+        {state === "completed" && (
+          <svg width="11" height="11" viewBox="0 0 24 24" style={{ display: "flex" }}>
             <path
-              d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-              fill={iconFill}
+              d="M5 12l5 5L20 7"
+              stroke={iconColor}
+              strokeWidth="3.5"
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             />
           </svg>
         )}
-        {shape === "play" && (
-          <svg width="12" height="12" viewBox="0 0 24 24" style={{ display: "flex", marginLeft: "2px" }}>
-            <path d="M8 5v14l11-7L8 5z" fill={iconFill} />
+        {state === "current" && (
+          <svg width="9" height="9" viewBox="0 0 24 24" style={{ display: "flex" }}>
+            <path d="M8 5v14l11-7L8 5z" fill={iconColor} />
           </svg>
         )}
-        {shape === "lock" && (
-          <svg width="12" height="12" viewBox="0 0 24 24" style={{ display: "flex" }}>
+        {state === "locked" && (
+          <svg width="9" height="11" viewBox="0 0 16 18" style={{ display: "flex" }}>
             <path
-              d="M17 8h-1V6a4 4 0 00-8 0v2H7a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V10a2 2 0 00-2-2zm-7-2a2 2 0 014 0v2h-4V6z"
-              fill={iconFill}
+              d="M3 7h10v9H3zM5 7V4a3 3 0 0 1 6 0v3"
+              stroke={iconColor}
+              strokeWidth="1.4"
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             />
           </svg>
         )}
