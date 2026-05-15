@@ -1,12 +1,20 @@
 "use client";
 import * as React from "react";
 import Link from "next/link";
-import { Loader2, ArrowLeft, Sparkles } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { useT } from "../locale-provider";
 import { LessonPlayer } from "./lesson-player";
 import type { LessonContent } from "@/lib/schemas";
 
+/**
+ * LessonGate — Quiet direction.
+ *
+ * Shows the lesson title + objectives, then lazy-loads the generated
+ * content on tap. The previous version had a saturated white card with
+ * shadow; Quiet replaces it with a flat 1px-bordered card on bone
+ * background. The "New lesson" eyebrow uses Quiet's mono caps style.
+ */
 export function LessonGate(props: {
   courseId: string;
   lessonId: string;
@@ -28,9 +36,6 @@ export function LessonGate(props: {
       const r = await fetch(`/api/lessons/${props.lessonId}`);
       const d = await r.json();
       if (!r.ok) {
-        // Show the REAL message (d.message), not the generic envelope
-        // (d.error = "Generation failed"). The old precedence hid the actual
-        // cause from both users and judges debugging the prod demo.
         console.error("Lesson load failed:", d);
         throw new Error(d.message || d.error || "Generation failed");
       }
@@ -54,29 +59,32 @@ export function LessonGate(props: {
   }
 
   return (
-    <div className="px-4 sm:px-6 py-8 max-w-2xl mx-auto w-full">
+    <div className="px-4 sm:px-6 py-10 sm:py-14 max-w-2xl mx-auto w-full">
       <Link
         href={`/course/${props.courseId}`}
-        className="inline-flex items-center gap-2 text-sm font-bold text-zinc-500 hover:text-zinc-900 mb-6"
+        className="inline-flex items-center gap-1.5 text-[13px] text-ink-muted hover:text-ink mb-8 transition-colors"
       >
-        <ArrowLeft className="h-4 w-4" /> {t.toCourse}
+        ← {t.toCourse}
       </Link>
 
-      <div className="rounded-card bg-white border-2 border-zinc-200 p-6 sm:p-8">
-        <p className="text-xs uppercase tracking-wider text-brand-600 font-bold mb-2">
-          {t.newLesson}
+      <div className="card-quiet p-6 sm:p-8">
+        <p className="eyebrow">{t.newLesson}</p>
+        <h1 className="mt-3 font-display font-medium text-[24px] sm:text-[32px] leading-[1.1] tracking-[-0.02em] text-ink">
+          {props.title}
+        </h1>
+        <p className="mt-3 text-[15px] sm:text-[16px] text-ink-soft leading-relaxed">
+          {props.summary}
         </p>
-        <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-zinc-900">{props.title}</h1>
-        <p className="mt-2 text-zinc-600 leading-relaxed">{props.summary}</p>
 
-        <div className="mt-6">
-          <p className="text-xs uppercase tracking-wider text-zinc-400 font-bold mb-2">
-            {t.whatYoullLearn}
-          </p>
-          <ul className="space-y-1.5">
+        <div className="mt-6 pt-6 border-t border-rule">
+          <p className="eyebrow-tight mb-3">{t.whatYoullLearn}</p>
+          <ul className="space-y-2">
             {props.objectives.map((o) => (
-              <li key={o} className="flex items-start gap-2 text-sm text-zinc-700">
-                <span className="text-brand-500 mt-1">•</span>
+              <li
+                key={o}
+                className="flex items-start gap-2.5 text-[14px] sm:text-[15px] text-ink-soft leading-relaxed"
+              >
+                <span className="text-green mt-1.5 leading-none">·</span>
                 <span>{o}</span>
               </li>
             ))}
@@ -84,7 +92,7 @@ export function LessonGate(props: {
         </div>
 
         {error && (
-          <div className="mt-6 text-sm text-red-600 font-medium animate-shake">
+          <div className="mt-6 text-[13.5px] text-ink-soft border-l-2 border-ink pl-3 py-1 animate-shake">
             {error}
           </div>
         )}
@@ -92,18 +100,15 @@ export function LessonGate(props: {
         <Button onClick={load} disabled={loading} size="lg" className="w-full mt-8">
           {loading ? (
             <>
-              <Loader2 className="h-5 w-5 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" />
               {t.preparingMaterial}
             </>
           ) : (
-            <>
-              <Sparkles className="h-5 w-5" />
-              {t.startButton}
-            </>
+            <>{t.startButton} →</>
           )}
         </Button>
         {loading && (
-          <p className="text-xs text-zinc-500 text-center mt-3 animate-pulse">
+          <p className="text-[12px] text-ink-muted text-center mt-3 font-mono tracking-[0.06em]">
             {t.preparingHint}
           </p>
         )}

@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useUserId } from "../user-provider";
 import { useT } from "../locale-provider";
 import { ProgressBar } from "../ui/progress-bar";
-import { X, Heart, Volume2, VolumeX } from "lucide-react";
+import { X, Volume2, VolumeX } from "lucide-react";
 import type { LessonContent, ContentBlock, Exercise } from "@/lib/schemas";
 import { sfx, isMuted, setMuted, unlockAudio } from "@/lib/audio";
 import { ExerciseRenderer } from "./exercise-renderer";
@@ -197,37 +197,49 @@ export function LessonPlayer({
 
   return (
     <div className="flex flex-col flex-1 min-h-screen">
-      <div className="px-4 sm:px-6 py-4 border-b-2 border-zinc-100 bg-white sticky top-0 z-20">
+      <div className="px-4 sm:px-6 py-4 border-b border-rule bg-bone sticky top-0 z-20">
         <div className="max-w-2xl mx-auto flex items-center gap-3 sm:gap-4">
           <button
             onClick={() => router.push(`/course/${courseId}`)}
-            className="text-zinc-400 hover:text-zinc-700 transition-colors"
+            className="text-ink-muted hover:text-ink transition-colors"
             aria-label={t.exitLesson}
           >
-            <X className="h-6 w-6" />
+            <X className="h-5 w-5" />
           </button>
           <ProgressBar value={progressPct} className="flex-1" />
           <button
             onClick={toggleMute}
-            className="text-zinc-400 hover:text-zinc-700 transition-colors"
+            className="text-ink-muted hover:text-ink transition-colors"
             aria-label={muted ? "Unmute" : "Mute"}
           >
-            {muted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+            {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
           </button>
-          <div className="flex items-center gap-1 text-red-500 font-bold tabular-nums">
-            <Heart className={cn("h-5 w-5 fill-current transition-transform", hearts < MAX_HEARTS && "animate-pop")} key={hearts} />
-            <span>{hearts}</span>
+          {/* Hearts — three small dots, ink when alive, rule when spent.
+              Quiet replaces the red Heart icon with a calmer indicator. */}
+          <div className="flex items-center gap-1" aria-label={`${hearts} hearts remaining`}>
+            {Array.from({ length: MAX_HEARTS }).map((_, i) => (
+              <span
+                key={i}
+                className={cn(
+                  "w-2 h-2 rounded-full transition-colors",
+                  i < hearts ? "bg-ink" : "bg-rule",
+                )}
+                aria-hidden
+              />
+            ))}
           </div>
         </div>
       </div>
 
-      <div className="flex-1 px-4 sm:px-6 py-6 sm:py-10">
+      <div className="flex-1 px-4 sm:px-6 py-8 sm:py-12">
         <div className="max-w-2xl mx-auto" key={phase.index}>
           {isExercise && (
             <div className="animate-slide-up">
-              <p className="text-xs uppercase tracking-wider text-zinc-400 font-bold mb-4 flex items-center justify-between">
+              <p className="eyebrow flex items-center justify-between mb-6">
                 <span>{t.exerciseN(currentExerciseIndex, totalExercises)}</span>
-                <span className="text-zinc-300 normal-case font-medium text-[11px]">{title}</span>
+                <span className="font-mono text-[10px] tracking-[0.06em] text-ink-muted normal-case truncate max-w-[160px]">
+                  {title}
+                </span>
               </p>
               <ExerciseRenderer
                 exercise={content.exercises[currentStep.exIdx]}

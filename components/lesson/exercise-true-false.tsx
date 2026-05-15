@@ -4,7 +4,6 @@ import { Button } from "../ui/button";
 import { useT } from "../locale-provider";
 import { cn } from "@/lib/utils";
 import type { Exercise } from "@/lib/schemas";
-import { CheckCircle2, XCircle } from "lucide-react";
 
 type Props = {
   exercise: Extract<Exercise, { type: "true_false" }>;
@@ -12,6 +11,11 @@ type Props = {
   onAnswer: (correct: boolean, userAnswer: unknown) => void;
 };
 
+/**
+ * True/false — Quiet direction. No CheckCircle / XCircle icons (those
+ * pre-judge the answer with green/red imagery). Plain labels, ink
+ * selection, green accent on correct, strikethrough on wrong.
+ */
 export function ExerciseTrueFalse({ exercise, answered, onAnswer }: Props) {
   const t = useT();
   const [choice, setChoice] = React.useState<boolean | null>(null);
@@ -21,7 +25,6 @@ export function ExerciseTrueFalse({ exercise, answered, onAnswer }: Props) {
     onAnswer(choice === exercise.isTrue, choice);
   }
 
-  // Keyboard: 1/T = true, 2/F = false, Enter = check
   React.useEffect(() => {
     if (answered) return;
     function onKey(e: KeyboardEvent) {
@@ -41,7 +44,7 @@ export function ExerciseTrueFalse({ exercise, answered, onAnswer }: Props) {
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [answered, choice]);
 
   function isCorrectChoice(opt: boolean) {
@@ -53,17 +56,14 @@ export function ExerciseTrueFalse({ exercise, answered, onAnswer }: Props) {
 
   return (
     <div>
-      <p className="text-xs uppercase tracking-wider font-bold text-zinc-400 mb-3">
-        {t.trueFalsePrompt}
-      </p>
-      <div className="rounded-card bg-white border-2 border-zinc-200 p-6 sm:p-8 text-lg sm:text-xl leading-relaxed text-zinc-900 text-center font-medium">
+      <p className="eyebrow mb-3">{t.trueFalsePrompt}</p>
+      <div className="card-quiet p-6 sm:p-8 font-display font-medium text-[18px] sm:text-[22px] leading-relaxed text-ink text-center">
         {exercise.statement}
       </div>
 
-      <div className="grid grid-cols-2 gap-3 mt-6">
+      <div className="grid grid-cols-2 gap-2.5 mt-6">
         <ChoiceButton
           label={t.trueLabel}
-          icon={<CheckCircle2 className="h-6 w-6" />}
           selected={choice === true}
           correct={isCorrectChoice(true)}
           wrong={isWrongChoice(true)}
@@ -72,7 +72,6 @@ export function ExerciseTrueFalse({ exercise, answered, onAnswer }: Props) {
         />
         <ChoiceButton
           label={t.falseLabel}
-          icon={<XCircle className="h-6 w-6" />}
           selected={choice === false}
           correct={isCorrectChoice(false)}
           wrong={isWrongChoice(false)}
@@ -82,12 +81,7 @@ export function ExerciseTrueFalse({ exercise, answered, onAnswer }: Props) {
       </div>
 
       {!answered && (
-        <Button
-          onClick={check}
-          disabled={choice === null}
-          size="lg"
-          className="w-full mt-8"
-        >
+        <Button onClick={check} disabled={choice === null} size="lg" className="w-full mt-8">
           {t.check}
         </Button>
       )}
@@ -97,7 +91,6 @@ export function ExerciseTrueFalse({ exercise, answered, onAnswer }: Props) {
 
 function ChoiceButton({
   label,
-  icon,
   selected,
   correct,
   wrong,
@@ -105,7 +98,6 @@ function ChoiceButton({
   onClick,
 }: {
   label: string;
-  icon: React.ReactNode;
   selected: boolean;
   correct: boolean;
   wrong: boolean;
@@ -118,15 +110,14 @@ function ChoiceButton({
       disabled={disabled}
       onClick={onClick}
       className={cn(
-        "rounded-2xl border-2 p-5 font-bold transition-all flex items-center justify-center gap-2 btn-3d",
-        !correct && !wrong && selected && "border-brand-400 bg-brand-50 text-brand-900",
-        !correct && !wrong && !selected && "border-zinc-200 bg-white hover:border-zinc-300 text-zinc-700",
-        correct && "border-brand-500 bg-brand-50 text-brand-900",
-        wrong && "border-red-500 bg-red-50 text-red-900",
+        "rounded-[14px] border p-5 font-display font-medium text-[15px] sm:text-[16px] transition-colors",
+        !correct && !wrong && selected && "border-ink bg-surface text-ink",
+        !correct && !wrong && !selected && "border-rule bg-surface text-ink-soft hover:border-ink-muted",
+        correct && "border-green bg-green-soft text-ink",
+        wrong && "border-ink-muted bg-surface text-ink-muted line-through",
       )}
     >
-      {icon}
-      <span>{label}</span>
+      {label}
     </button>
   );
 }

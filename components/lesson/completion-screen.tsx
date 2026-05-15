@@ -1,11 +1,19 @@
 "use client";
 import * as React from "react";
 import Link from "next/link";
-import { Trophy, Zap, Target, Heart } from "lucide-react";
 import { Button } from "../ui/button";
 import { useT } from "../locale-provider";
 import { Confetti } from "./confetti";
 
+/**
+ * CompletionScreen — Quiet direction.
+ *
+ * The old version had emoji trophy + yellow/brand/red colored stat
+ * cards. Quiet replaces with a clean centered hero: small eyebrow
+ * eyebrow, italic-moment headline, 3-column flat stats, single primary
+ * CTA. Confetti remains for perfect scores — the only flash of color
+ * the design tolerates, and only as a one-time reward, not chrome.
+ */
 export function CompletionScreen({
   courseId,
   score,
@@ -22,13 +30,7 @@ export function CompletionScreen({
   const t = useT();
   const accuracy = Math.round((score / Math.max(total, 1)) * 100);
   const isPerfect = accuracy === 100;
-  const headline = isPerfect
-    ? t.perfect
-    : accuracy >= 80
-      ? t.great
-      : accuracy >= 50
-        ? t.passed
-        : t.goodJob;
+  const headline = isPerfect ? t.perfect : accuracy >= 80 ? t.great : accuracy >= 50 ? t.passed : t.goodJob;
   const subheading = isPerfect
     ? t.perfectSub
     : accuracy >= 80
@@ -41,37 +43,17 @@ export function CompletionScreen({
     <div className="flex-1 flex items-center justify-center px-4 sm:px-6 py-12 relative overflow-hidden">
       {isPerfect && <Confetti />}
       <div className="max-w-md w-full text-center animate-pop relative z-10">
-        <div className="text-7xl mb-4">{isPerfect ? "🏆" : accuracy >= 80 ? "🎉" : "✨"}</div>
-        <h1 className="text-3xl sm:text-4xl font-black text-zinc-900">{headline}</h1>
-        <p className="text-zinc-600 mt-2">{subheading}</p>
+        <div className="eyebrow">{isPerfect ? "perfect score" : "lesson complete"}</div>
+        <h1 className="mt-3 font-display font-medium text-[32px] sm:text-[40px] leading-[1.05] tracking-[-0.025em] text-ink">
+          {headline}
+        </h1>
+        <p className="mt-3 text-[15px] sm:text-[16px] text-ink-soft leading-relaxed">{subheading}</p>
 
-        <div className="grid grid-cols-3 gap-3 mt-8">
-          <Stat
-            icon={<Zap className="h-5 w-5 text-yellow-500 fill-current" />}
-            label={t.xp}
-            value={`+${xpEarned}`}
-            tint="bg-yellow-50 border-yellow-200"
-          />
-          <Stat
-            icon={<Target className="h-5 w-5 text-brand-600 fill-current" />}
-            label={t.accuracy}
-            value={`${accuracy}%`}
-            tint="bg-brand-50 border-brand-200"
-          />
-          <Stat
-            icon={<Heart className="h-5 w-5 text-red-500 fill-current" />}
-            label={t.hearts}
-            value={`${hearts}/3`}
-            tint="bg-red-50 border-red-200"
-          />
+        <div className="mt-8 grid grid-cols-3 border-t border-b border-rule">
+          <Stat label={t.xp} value={`+${xpEarned}`} divider />
+          <Stat label={t.accuracy} value={`${accuracy}%`} divider />
+          <Stat label={t.hearts} value={`${hearts}/3`} />
         </div>
-
-        {isPerfect && (
-          <div className="mt-6 inline-flex items-center gap-2 bg-yellow-100 text-yellow-900 px-4 py-2 rounded-full font-bold">
-            <Trophy className="h-5 w-5" />
-            {t.withoutMistakes}
-          </div>
-        )}
 
         <Button asChild size="lg" className="w-full mt-8">
           <Link href={`/course/${courseId}`}>{t.continueCourse}</Link>
@@ -84,12 +66,15 @@ export function CompletionScreen({
   );
 }
 
-function Stat({ icon, label, value, tint }: { icon: React.ReactNode; label: string; value: string; tint: string }) {
+function Stat({ label, value, divider }: { label: string; value: string; divider?: boolean }) {
   return (
-    <div className={`rounded-2xl border-2 p-3 ${tint}`}>
-      <div className="flex justify-center mb-1">{icon}</div>
-      <p className="text-xs uppercase tracking-wider font-bold text-zinc-500">{label}</p>
-      <p className="text-xl font-black text-zinc-900 mt-0.5">{value}</p>
+    <div className={`px-2 py-5 ${divider ? "border-r border-rule" : ""}`}>
+      <div className="font-display font-normal text-[28px] leading-none tracking-[-0.02em] text-ink">
+        {value}
+      </div>
+      <div className="mt-2 font-mono text-[10px] font-medium tracking-[0.16em] uppercase text-ink-muted">
+        {label}
+      </div>
     </div>
   );
 }

@@ -13,6 +13,16 @@ type Props = {
 
 type Match = { leftIdx: number; rightIdx: number };
 
+/**
+ * Matching — Quiet direction.
+ *
+ * The old version used 5 different pastel colors (blue/purple/pink/
+ * amber/teal) to indicate which pairs were matched. Quiet forbids
+ * multi-hue palettes: one accent only. We replace the rainbow with a
+ * mono-caps NUMBER badge in the top-right of each matched tile — "1",
+ * "2", "3" — so the learner can still visually pair up tiles, without
+ * the carnival of colors.
+ */
 export function ExerciseMatching({ exercise, answered, onAnswer }: Props) {
   const t = useT();
   const lefts = React.useMemo(
@@ -20,10 +30,11 @@ export function ExerciseMatching({ exercise, answered, onAnswer }: Props) {
     [exercise.pairs],
   );
   const rights = React.useMemo(
-    () => shuffled(
-      exercise.pairs.map((p, i) => ({ id: `R${i}`, text: p.right, pairIndex: i })),
-      exercise.pairs.length + 7,
-    ),
+    () =>
+      shuffled(
+        exercise.pairs.map((p, i) => ({ id: `R${i}`, text: p.right, pairIndex: i })),
+        exercise.pairs.length + 7,
+      ),
     [exercise.pairs],
   );
 
@@ -66,12 +77,12 @@ export function ExerciseMatching({ exercise, answered, onAnswer }: Props) {
 
   return (
     <div>
-      <p className="text-xs uppercase tracking-wider font-bold text-zinc-400 mb-3">
-        {t.matchPrompt}
-      </p>
-      <h3 className="text-lg sm:text-xl font-bold text-zinc-900 mb-6">{exercise.prompt}</h3>
+      <p className="eyebrow mb-3">{t.matchPrompt}</p>
+      <h3 className="font-display font-medium text-[18px] sm:text-[22px] text-ink mb-6 leading-snug tracking-[-0.015em]">
+        {exercise.prompt}
+      </h3>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-2.5">
         <div className="space-y-2">
           {lefts.map((l, i) => {
             const m = leftMatched(i);
@@ -138,14 +149,6 @@ export function ExerciseMatching({ exercise, answered, onAnswer }: Props) {
   );
 }
 
-const MATCH_COLORS = [
-  "border-blue-400 bg-blue-50 text-blue-900",
-  "border-purple-400 bg-purple-50 text-purple-900",
-  "border-pink-400 bg-pink-50 text-pink-900",
-  "border-amber-400 bg-amber-50 text-amber-900",
-  "border-teal-400 bg-teal-50 text-teal-900",
-];
-
 function MatchTile({
   text,
   selected,
@@ -163,11 +166,11 @@ function MatchTile({
   disabled: boolean;
   onClick: () => void;
 }) {
-  let style = "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-300";
-  if (selected) style = "border-brand-400 bg-brand-50 text-brand-900";
-  else if (matched && correct === null) style = MATCH_COLORS[matchIdx % MATCH_COLORS.length];
-  else if (matched && correct === true) style = "border-brand-500 bg-brand-50 text-brand-900";
-  else if (matched && correct === false) style = "border-red-500 bg-red-50 text-red-900";
+  let style = "border-rule bg-surface text-ink-soft hover:border-ink-muted";
+  if (selected) style = "border-ink bg-surface text-ink";
+  else if (matched && correct === null) style = "border-ink bg-surface text-ink";
+  else if (matched && correct === true) style = "border-green bg-green-soft text-ink";
+  else if (matched && correct === false) style = "border-ink-muted bg-surface text-ink-muted";
 
   return (
     <button
@@ -175,12 +178,17 @@ function MatchTile({
       disabled={disabled}
       onClick={onClick}
       className={cn(
-        "w-full text-left rounded-2xl border-2 p-3.5 text-sm sm:text-base font-medium transition-all",
-        "btn-3d disabled:cursor-not-allowed",
+        "relative w-full text-left rounded-[14px] border p-3.5 font-display font-normal text-[14px] sm:text-[15px] transition-colors disabled:cursor-not-allowed",
         style,
       )}
     >
-      {text}
+      {/* Numbered pair badge — replaces the old colored fills */}
+      {matched && (
+        <span className="absolute top-2 right-2 inline-flex items-center justify-center w-5 h-5 rounded-full bg-ink text-surface font-mono text-[10px] font-medium">
+          {matchIdx + 1}
+        </span>
+      )}
+      <span className="pr-6">{text}</span>
     </button>
   );
 }

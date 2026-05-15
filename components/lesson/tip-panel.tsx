@@ -1,14 +1,17 @@
 "use client";
 import * as React from "react";
 import ReactMarkdown from "react-markdown";
-import { Lightbulb, BookOpen, ArrowRight } from "lucide-react";
 import { Button } from "../ui/button";
 import { useT } from "../locale-provider";
 import type { ContentBlock } from "@/lib/schemas";
 
 /**
- * Interstitial mini-lesson card. Shows ONE content block (concept or example)
- * between exercises, Duolingo-style. Press Enter/Space to advance.
+ * TipPanel — Quiet direction.
+ *
+ * Interstitial mini-lesson card between exercises. The previous version
+ * tinted the whole card amber for examples and indigo for concepts —
+ * Quiet collapses that to a single bone-on-surface card with mono-caps
+ * eyebrow telling you which block type this is. One accent only.
  */
 export function TipPanel({ block, onContinue }: { block: ContentBlock; onContinue: () => void }) {
   const t = useT();
@@ -30,32 +33,27 @@ export function TipPanel({ block, onContinue }: { block: ContentBlock; onContinu
 
   return (
     <div className="animate-slide-up max-w-2xl mx-auto">
-      <div className={`rounded-card border-2 p-5 sm:p-7 ${
-        isExample ? "bg-amber-50 border-amber-200" : "bg-indigo-50 border-indigo-200"
-      }`}>
-        <div className="flex items-center gap-2 mb-3">
-          <span className={`inline-flex items-center justify-center h-9 w-9 rounded-2xl ${
-            isExample ? "bg-amber-100 text-amber-700" : "bg-indigo-100 text-indigo-700"
-          }`}>
-            {isExample ? <Lightbulb className="h-5 w-5" /> : <BookOpen className="h-5 w-5" />}
-          </span>
-          <p className={`text-xs uppercase tracking-wider font-bold ${
-            isExample ? "text-amber-800" : "text-indigo-800"
-          }`}>
-            {t.tipLabel}
-          </p>
-        </div>
+      <div className="card-quiet p-6 sm:p-8">
+        <p className="eyebrow mb-3">
+          {isExample ? t.tipLabel ?? "Example" : t.tipLabel ?? "Concept"}
+        </p>
 
-        <h3 className="text-xl font-black text-zinc-900 leading-snug">{block.heading}</h3>
-        <div className="mt-3 prose prose-sm max-w-none prose-zinc text-zinc-800 leading-relaxed">
+        <h3 className="font-display font-medium text-[20px] sm:text-[24px] text-ink leading-snug tracking-[-0.015em]">
+          {block.heading}
+        </h3>
+
+        <div className="lesson-prose mt-3 text-[15px] sm:text-[16px] text-ink-soft leading-[1.6]">
           <ReactMarkdown>{block.body}</ReactMarkdown>
         </div>
 
         {block.type === "concept" && block.keyPoints && block.keyPoints.length > 0 && (
-          <ul className="mt-4 space-y-1.5 border-t border-indigo-200/60 pt-3">
+          <ul className="mt-5 pt-4 border-t border-rule space-y-2">
             {block.keyPoints.map((kp, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm text-zinc-800 font-medium">
-                <span className="text-indigo-600 mt-0.5">→</span>
+              <li
+                key={i}
+                className="flex items-start gap-2.5 text-[14px] sm:text-[15px] text-ink leading-relaxed"
+              >
+                <span className="text-green mt-1.5 leading-none">·</span>
                 <span>{kp}</span>
               </li>
             ))}
@@ -64,8 +62,7 @@ export function TipPanel({ block, onContinue }: { block: ContentBlock; onContinu
       </div>
 
       <Button onClick={onContinue} size="lg" className="w-full mt-6">
-        {t.gotIt}
-        <ArrowRight className="h-5 w-5" />
+        {t.gotIt} →
       </Button>
     </div>
   );

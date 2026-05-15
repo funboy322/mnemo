@@ -6,22 +6,30 @@ import { cn } from "@/lib/utils";
 type Variant = "primary" | "secondary" | "ghost" | "outline" | "danger";
 type Size = "sm" | "md" | "lg";
 
+/**
+ * Button — Quiet direction.
+ *
+ * Primary = green pill with the single allowed shadow.
+ * Secondary = ink pill (no shadow).
+ * Outline = transparent with 1px rule border.
+ * Ghost = no border, hover lifts to ink.
+ * Danger = ink pill — Quiet avoids loud reds; destructive actions get a
+ *          confirm step instead of a colored button.
+ */
 const variantClasses: Record<Variant, string> = {
   primary:
-    "bg-brand-500 text-white hover:bg-brand-500 active:bg-brand-500 btn-3d btn-3d-brand uppercase tracking-wide",
-  secondary:
-    "bg-zinc-900 text-white hover:bg-zinc-900 btn-3d uppercase tracking-wide",
-  ghost: "bg-transparent text-zinc-700 hover:bg-zinc-100",
+    "bg-green text-surface hover:brightness-95 shadow-[0_1px_2px_rgba(13,138,74,0.2),0_4px_14px_rgba(13,138,74,0.18)]",
+  secondary: "bg-ink text-surface hover:brightness-110",
+  ghost: "bg-transparent text-ink-soft hover:text-ink",
   outline:
-    "bg-white text-zinc-800 border-2 border-zinc-200 hover:border-zinc-300 btn-3d",
-  danger:
-    "bg-red-500 text-white hover:bg-red-500 btn-3d btn-3d-danger uppercase tracking-wide",
+    "bg-transparent text-ink border border-rule hover:border-ink",
+  danger: "bg-ink text-surface hover:brightness-110",
 };
 
 const sizeClasses: Record<Size, string> = {
-  sm: "h-9 px-4 text-sm rounded-xl",
-  md: "h-12 px-6 text-base rounded-2xl",
-  lg: "h-14 px-8 text-lg rounded-2xl",
+  sm: "h-9 px-4 text-[13.5px] rounded-full",
+  md: "h-11 px-5 text-[14.5px] rounded-full",
+  lg: "h-12 px-6 text-[15px] rounded-full",
 };
 
 export interface ButtonProps
@@ -38,7 +46,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <Comp
         ref={ref}
         className={cn(
-          "inline-flex items-center justify-center gap-2 font-bold transition-all disabled:opacity-50 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-300/40",
+          "inline-flex items-center justify-center gap-2 font-display font-medium transition-all disabled:opacity-50 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green/40",
           variantClasses[variant],
           sizeClasses[size],
           className,

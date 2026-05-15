@@ -16,10 +16,6 @@ function normalize(s: string) {
   return s.trim().toLowerCase().replace(/\s+/g, " ").replace(/[.,!?;:]+$/g, "");
 }
 
-/**
- * Split on the FIRST blank only — even if AI produces multiple `___`,
- * we render a single input. Subsequent placeholders are folded into the trailing text.
- */
 function splitOnceAtBlank(sentence: string): [string, string] {
   const match = sentence.match(/_{2,}/);
   if (!match || match.index === undefined) return [sentence, ""];
@@ -28,6 +24,10 @@ function splitOnceAtBlank(sentence: string): [string, string] {
   return [before, after];
 }
 
+/**
+ * Fill-blank — Quiet direction. Surface card, single rule border,
+ * underline-style inline input. No saturated highlights.
+ */
 export function ExerciseFillBlank({ exercise, answered, onAnswer }: Props) {
   const t = useT();
   const [value, setValue] = React.useState("");
@@ -47,10 +47,8 @@ export function ExerciseFillBlank({ exercise, answered, onAnswer }: Props) {
 
   return (
     <div>
-      <p className="text-xs uppercase tracking-wider font-bold text-zinc-400 mb-3">
-        {t.fillBlankPrompt}
-      </p>
-      <div className="rounded-card bg-white border-2 border-zinc-200 p-5 sm:p-6 text-lg sm:text-xl leading-relaxed text-zinc-900">
+      <p className="eyebrow mb-3">{t.fillBlankPrompt}</p>
+      <div className="card-quiet p-5 sm:p-7 text-[18px] sm:text-[22px] font-display font-normal leading-[1.5] text-ink">
         <span>{before}</span>
         <span className="inline-block min-w-[120px] mx-1 align-middle">
           <Input
@@ -59,10 +57,10 @@ export function ExerciseFillBlank({ exercise, answered, onAnswer }: Props) {
             onChange={(e) => setValue(e.target.value)}
             disabled={answered}
             className={cn(
-              "h-10 text-base sm:text-lg inline-block w-auto px-3 text-center",
-              answered && "border-brand-400 bg-brand-50",
+              "h-9 text-[16px] sm:text-[18px] inline-block w-auto px-2 text-center font-display border-0 border-b-2 border-rule rounded-none bg-transparent focus:border-ink focus:ring-0",
+              answered && "border-green text-green",
             )}
-            placeholder="..."
+            placeholder="…"
             autoComplete="off"
             autoCorrect="off"
             autoCapitalize="off"
@@ -76,16 +74,11 @@ export function ExerciseFillBlank({ exercise, answered, onAnswer }: Props) {
       </div>
 
       {exercise.hint && !answered && (
-        <p className="mt-3 text-sm text-zinc-500 italic">💡 {exercise.hint}</p>
+        <p className="mt-3 text-[13px] text-ink-muted">{exercise.hint}</p>
       )}
 
       {!answered && (
-        <Button
-          onClick={check}
-          disabled={!value.trim()}
-          size="lg"
-          className="w-full mt-8"
-        >
+        <Button onClick={check} disabled={!value.trim()} size="lg" className="w-full mt-8">
           {t.check}
         </Button>
       )}

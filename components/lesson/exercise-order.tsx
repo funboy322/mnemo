@@ -14,6 +14,12 @@ type Props = {
 
 type Item = { id: number; text: string };
 
+/**
+ * Order — Quiet direction. Drop zone is 1px dashed rule on bone (was a
+ * brand-tinted card). Selected items get an ink border instead of
+ * brand-50 fill. Wrong items in answered state get strikethrough and
+ * ink-muted color, not red.
+ */
 export function ExerciseOrder({ exercise, answered, onAnswer }: Props) {
   const t = useT();
   const correctOrder = React.useMemo(
@@ -51,16 +57,14 @@ export function ExerciseOrder({ exercise, answered, onAnswer }: Props) {
 
   return (
     <div>
-      <p className="text-xs uppercase tracking-wider font-bold text-zinc-400 mb-3">
-        {t.orderPrompt}
-      </p>
-      <h3 className="text-lg sm:text-xl font-bold text-zinc-900 mb-6">{exercise.prompt}</h3>
+      <p className="eyebrow mb-3">{t.orderPrompt}</p>
+      <h3 className="font-display font-medium text-[18px] sm:text-[22px] text-ink mb-6 leading-snug tracking-[-0.015em]">
+        {exercise.prompt}
+      </h3>
 
-      <div className="rounded-card border-2 border-dashed border-zinc-300 bg-white p-3 min-h-[12rem]">
+      <div className="rounded-[16px] border border-dashed border-rule bg-surface p-3 min-h-[12rem]">
         {chosen.length === 0 ? (
-          <p className="text-sm text-zinc-400 text-center py-8">
-            {t.pickToAddHere}
-          </p>
+          <p className="text-[13px] text-ink-muted text-center py-10">{t.pickToAddHere}</p>
         ) : (
           <ol className="space-y-2">
             {chosen.map((it, i) => {
@@ -70,35 +74,37 @@ export function ExerciseOrder({ exercise, answered, onAnswer }: Props) {
                 <li key={it.id}>
                   <div
                     className={cn(
-                      "flex items-center gap-2 rounded-2xl border-2 p-3",
-                      !answered && "border-brand-400 bg-brand-50 text-brand-900",
-                      isCorrect && "border-brand-500 bg-brand-50 text-brand-900",
-                      isWrong && "border-red-400 bg-red-50 text-red-900",
+                      "flex items-center gap-2 rounded-[14px] border p-3",
+                      !answered && "border-ink bg-surface text-ink",
+                      isCorrect && "border-green bg-green-soft text-ink",
+                      isWrong && "border-ink-muted bg-surface text-ink-muted line-through",
                     )}
                   >
-                    <span className="h-7 w-7 shrink-0 inline-flex items-center justify-center rounded-lg bg-white text-zinc-700 border-2 border-zinc-200 font-black text-xs">
+                    <span className="h-7 w-7 shrink-0 inline-flex items-center justify-center rounded-full bg-ink text-surface font-mono text-[11px] font-medium">
                       {i + 1}
                     </span>
-                    <span className="flex-1 font-medium text-sm sm:text-base">{it.text}</span>
+                    <span className="flex-1 font-display font-normal text-[14px] sm:text-[15px]">
+                      {it.text}
+                    </span>
                     {!answered && (
                       <div className="flex flex-col">
                         <button
                           type="button"
                           onClick={() => move(i, -1)}
                           disabled={i === 0}
-                          className="h-7 w-7 inline-flex items-center justify-center text-zinc-400 hover:text-zinc-700 disabled:opacity-30 active:bg-zinc-100 rounded"
+                          className="h-7 w-7 inline-flex items-center justify-center text-ink-muted hover:text-ink disabled:opacity-30 rounded"
                           aria-label={t.moveUp}
                         >
-                          <ChevronUp className="h-5 w-5" />
+                          <ChevronUp className="h-4 w-4" />
                         </button>
                         <button
                           type="button"
                           onClick={() => move(i, 1)}
                           disabled={i === chosen.length - 1}
-                          className="h-7 w-7 inline-flex items-center justify-center text-zinc-400 hover:text-zinc-700 disabled:opacity-30 active:bg-zinc-100 rounded"
+                          className="h-7 w-7 inline-flex items-center justify-center text-ink-muted hover:text-ink disabled:opacity-30 rounded"
                           aria-label={t.moveDown}
                         >
-                          <ChevronDown className="h-5 w-5" />
+                          <ChevronDown className="h-4 w-4" />
                         </button>
                       </div>
                     )}
@@ -106,10 +112,10 @@ export function ExerciseOrder({ exercise, answered, onAnswer }: Props) {
                       <button
                         type="button"
                         onClick={() => unpick(it)}
-                        className="h-9 w-9 inline-flex items-center justify-center text-zinc-400 hover:text-red-600 active:bg-red-50 rounded-lg"
+                        className="h-9 w-9 inline-flex items-center justify-center text-ink-muted hover:text-ink rounded-lg"
                         aria-label={t.remove}
                       >
-                        <X className="h-5 w-5" />
+                        <X className="h-4 w-4" />
                       </button>
                     )}
                   </div>
@@ -128,7 +134,7 @@ export function ExerciseOrder({ exercise, answered, onAnswer }: Props) {
               type="button"
               disabled={answered}
               onClick={() => pick(it)}
-              className="rounded-2xl border-2 border-zinc-200 bg-white px-3.5 py-2 text-sm sm:text-base font-medium text-zinc-800 hover:border-zinc-300 btn-3d disabled:cursor-not-allowed"
+              className="rounded-full border border-rule bg-surface px-3.5 py-2 font-display font-normal text-[13.5px] text-ink-soft hover:border-ink hover:text-ink disabled:cursor-not-allowed transition-colors"
             >
               {it.text}
             </button>
@@ -137,12 +143,7 @@ export function ExerciseOrder({ exercise, answered, onAnswer }: Props) {
       )}
 
       {!answered && (
-        <Button
-          onClick={check}
-          disabled={chosen.length !== correctOrder.length}
-          size="lg"
-          className="w-full mt-8"
-        >
+        <Button onClick={check} disabled={chosen.length !== correctOrder.length} size="lg" className="w-full mt-8">
           {t.check}
         </Button>
       )}

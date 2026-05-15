@@ -9,7 +9,8 @@ import { ProgressBar } from "../ui/progress-bar";
 import { ExerciseRenderer } from "../lesson/exercise-renderer";
 import { Feedback } from "../lesson/feedback";
 import { CompletionScreen } from "../lesson/completion-screen";
-import { X, Heart, Sparkles, Loader2 } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import type { Exercise } from "@/lib/schemas";
 
 const MAX_HEARTS = 3;
@@ -28,6 +29,10 @@ type Phase =
   | { kind: "exercise"; index: number; answered: null | { correct: boolean; userAnswer: unknown } }
   | { kind: "complete" };
 
+/**
+ * ReviewPlayer — Quiet direction. Matches the lesson player chrome:
+ * bone bg, 1px rule, ink hearts dots, no saturated brand fills.
+ */
 export function ReviewPlayer() {
   const router = useRouter();
   const userId = useUserId();
@@ -95,7 +100,7 @@ export function ReviewPlayer() {
   if (phase.kind === "loading") {
     return (
       <div className="flex-1 flex items-center justify-center px-4 py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-brand-500" />
+        <Loader2 className="h-6 w-6 animate-spin text-ink-muted" />
       </div>
     );
   }
@@ -104,10 +109,12 @@ export function ReviewPlayer() {
     return (
       <div className="flex-1 flex items-center justify-center px-4 py-20 text-center">
         <div className="max-w-md">
-          <div className="text-5xl mb-4">📚</div>
-          <h1 className="text-2xl font-black tracking-tight text-zinc-900">{t.reviewTitle}</h1>
-          <p className="mt-3 text-zinc-600">{t.reviewEmpty}</p>
-          <Button asChild size="lg" className="mt-6">
+          <div className="eyebrow">{t.reviewTitle}</div>
+          <h1 className="mt-3 font-display font-medium text-[28px] sm:text-[36px] tracking-[-0.02em] text-ink">
+            Nothing to {''}<em>review</em> yet
+          </h1>
+          <p className="mt-3 text-[15px] text-ink-soft leading-relaxed">{t.reviewEmpty}</p>
+          <Button asChild size="lg" className="mt-8">
             <Link href="/dashboard">{t.toMyCourses}</Link>
           </Button>
         </div>
@@ -129,50 +136,56 @@ export function ReviewPlayer() {
 
   return (
     <div className="flex flex-col flex-1 min-h-screen">
-      <div className="px-4 sm:px-6 py-4 border-b-2 border-zinc-100 bg-white sticky top-0 z-20">
+      <div className="px-4 sm:px-6 py-4 border-b border-rule bg-bone sticky top-0 z-20">
         <div className="max-w-2xl mx-auto flex items-center gap-4">
           <button
             onClick={() => router.push("/dashboard")}
-            className="text-zinc-400 hover:text-zinc-700 transition-colors"
+            className="text-ink-muted hover:text-ink transition-colors"
             aria-label={t.exitLesson}
           >
-            <X className="h-6 w-6" />
+            <X className="h-5 w-5" />
           </button>
           <ProgressBar value={progressPct} className="flex-1" />
-          <div className="flex items-center gap-1 text-red-500 font-bold">
-            <Heart className="h-5 w-5 fill-current" />
-            <span>{hearts}</span>
+          <div className="flex items-center gap-1" aria-label={`${hearts} hearts remaining`}>
+            {Array.from({ length: MAX_HEARTS }).map((_, i) => (
+              <span
+                key={i}
+                className={cn(
+                  "w-2 h-2 rounded-full transition-colors",
+                  i < hearts ? "bg-ink" : "bg-rule",
+                )}
+                aria-hidden
+              />
+            ))}
           </div>
         </div>
       </div>
 
-      <div className="flex-1 px-4 sm:px-6 py-6 sm:py-10">
+      <div className="flex-1 px-4 sm:px-6 py-8 sm:py-12">
         <div className="max-w-2xl mx-auto">
           {phase.kind === "intro" && (
-            <div className="animate-slide-up text-center py-8">
-              <div className="inline-flex h-16 w-16 items-center justify-center rounded-3xl bg-brand-100 text-brand-700 mb-6">
-                <Sparkles className="h-8 w-8" />
-              </div>
-              <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-zinc-900">
-                {t.reviewTitle}
+            <div className="animate-slide-up text-center py-6">
+              <div className="eyebrow">{t.reviewTitle}</div>
+              <h1 className="mt-3 font-display font-medium text-[32px] sm:text-[44px] leading-[1.05] tracking-[-0.025em] text-ink">
+                <em>Tonight</em> — {total} cards
               </h1>
-              <p className="mt-3 text-zinc-600 max-w-md mx-auto">{t.reviewSubtitle}</p>
+              <p className="mt-3 text-[15px] sm:text-[16px] text-ink-soft max-w-md mx-auto leading-relaxed">
+                {t.reviewSubtitle}
+              </p>
               <Button onClick={start} size="lg" className="mt-8 min-w-[200px]">
-                {t.reviewStart}
+                {t.reviewStart} →
               </Button>
             </div>
           )}
 
           {phase.kind === "exercise" && items[phase.index] && (
             <div key={phase.index} className="animate-slide-up">
-              <p className="text-xs uppercase tracking-wider text-zinc-400 font-bold mb-1">
-                {t.exerciseN(phase.index + 1, total)}
-              </p>
-              <p className="text-xs text-zinc-400 mb-4">
+              <p className="eyebrow mb-1">{t.exerciseN(phase.index + 1, total)}</p>
+              <p className="text-[11.5px] text-ink-muted mb-6 font-mono tracking-[0.06em]">
                 {t.reviewSourceLesson}:{" "}
                 <Link
                   href={`/course/${items[phase.index].courseId}/lesson/${items[phase.index].lessonId}`}
-                  className="text-brand-600 hover:underline font-medium"
+                  className="text-ink-soft hover:text-ink underline underline-offset-2 decoration-rule"
                 >
                   {items[phase.index].lessonTitle}
                 </Link>
