@@ -27,7 +27,13 @@ export function LessonGate(props: {
     try {
       const r = await fetch(`/api/lessons/${props.lessonId}`);
       const d = await r.json();
-      if (!r.ok) throw new Error(d.error || d.message || "Generation failed");
+      if (!r.ok) {
+        // Show the REAL message (d.message), not the generic envelope
+        // (d.error = "Generation failed"). The old precedence hid the actual
+        // cause from both users and judges debugging the prod demo.
+        console.error("Lesson load failed:", d);
+        throw new Error(d.message || d.error || "Generation failed");
+      }
       setContent(d.lesson.content);
     } catch (err) {
       setError((err as Error).message);

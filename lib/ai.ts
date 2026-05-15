@@ -222,14 +222,42 @@ Quality bar:
     { "type": "order", "prompt": "Order these...", "items": ["first step", "second step", "third step", "fourth step"], "explanation": "..." }
   ]
 }`;
-  const { text } = await generateText({
-    model: getModel(),
-    system: system + `\n\nOUTPUT FORMAT — return ONLY a JSON object matching EXACTLY this shape (use these exact field names):\n\n${jsonTemplate}\n\nNo markdown fences, no prose, just the JSON object. Each exercise object MUST have a "type" string discriminator.`,
-    prompt: prompt + `\n\nReturn the JSON object now matching the shape shown above.`,
-    temperature: 0.7,
-    maxOutputTokens: 8000,
-  });
-  const cleaned = extractJson(text);
-  const parsed = JSON.parse(cleaned);
-  return LessonContentSchema.parse(parsed);
+
+  // Up to 3 attempts. Two failure modes we want to survive:
+  //   1. Transient network/rate errors from Google AI → retry with backoff.
+  //   2. Zod validation failure (model produced too many `order` items,
+  //      too few `matching` pairs, etc.) → retry with the failure mode
+  //      injected into the prompt so the model fixes it.
+  const baseSystem = system + `\n\nOUTPUT FORMAT — return ONLY a JSON object matching EXACTLY this shape (use these exact field names):\n\n${jsonTemplate}\n\nNo markdown fences, no prose, just the JSON object. Each exercise object MUST have a "type" string discriminator.\n\nHARD CONSTRAINTS — failing these means your output is discarded:\n- exercises: array of EXACTLY 4-6 items\n- matching pairs: array of EXACTLY 3-5 items (never 2, never 6)\n- order items: array of EXACTLY 3-5 items (never 2, never 6)\n- multiple_choice options: array of EXACTLY 4 items`;
+
+  let lastError: unknown = null;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const correctionNudge = attempt > 1 && lastError instanceof Error
+        ? `\n\nIMPORTANT: previous attempt failed with: ${lastError.message}\nThis time, count your output carefully against the constraints. Re-read the hard constraints above before emitting.`
+        : "";
+
+      const { text } = await generateText({
+        model: getModel(),
+        system: baseSystem,
+        prompt: prompt + correctionNudge + `\n\nReturn the JSON object now matching the shape shown above.`,
+        temperature: 0.7,
+        maxOutputTokens: 8000,
+      });
+      const cleaned = extractJson(text);
+      const parsed = JSON.parse(cleaned);
+      return LessonContentSchema.parse(parsed);
+    } catch (err) {
+      lastError = err;
+      const msg = err instanceof Error ? err.message : String(err);
+      console.warn(`[generateLessonContent] attempt ${attempt}/3 failed:`, msg);
+      if (attempt < 3) {
+        // Exponential backoff: 1s, 3s. Soothes both rate limits and ECONNRESETs.
+        await new Promise((r) => setTimeout(r, attempt * 1000));
+      }
+    }
+  }
+  throw new Error(
+    `Failed after 3 attempts. Last error: ${lastError instanceof Error ? lastError.message : String(lastError)}`,
+  );
 }
