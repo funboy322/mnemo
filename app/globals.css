@@ -1,40 +1,53 @@
 @import "tailwindcss";
 
-/* Onest — modern grotesque with character, Latin+Cyrillic+Turkish.
-   Loaded via plain @import (not Next.js font fetcher) so prod builds don't depend
-   on Google Fonts at build time. JetBrains Mono kept for code/numbers. */
-@import url("https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap");
+/* Quiet direction — Apple-style minimalism + one signature moment per screen.
+   Inter Tight as the voice. Instrument Serif italic for the single accent
+   word per heading. JetBrains Mono for caps eyebrows and numerals.
+   Loaded via plain @import so prod doesn't depend on Google Fonts at build. */
+@import url("https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Instrument+Serif:ital@1&family=JetBrains+Mono:wght@400;500;600&display=swap");
 
 @theme {
-  /* Brand green — recognizable mark */
-  --color-brand-50: #ecfdf3;
-  --color-brand-100: #d1fadf;
-  --color-brand-200: #a6f4c5;
-  --color-brand-300: #6ce9a6;
-  --color-brand-400: #32d583;
-  --color-brand-500: #12b76a;
-  --color-brand-600: #0f9b5b;
-  --color-brand-700: #0a7c47;
-  --color-brand-800: #075f37;
-  --color-brand-900: #054028;
+  /* ── Quiet palette ──
+     One accent only (green). Everything else is ink + warm neutrals. */
+  --color-bone: #fbfaf6;        /* app background — a very warm off-white */
+  --color-surface: #ffffff;     /* cards, inputs — the only true white */
+  --color-ink: #16140f;         /* primary text, dark buttons, mark outline */
+  --color-ink-soft: #5b574e;    /* secondary text */
+  --color-ink-muted: #9a948a;   /* labels, captions, hint text */
+  --color-rule: #ebe6dc;        /* borders, dividers, progress-track bg */
+  --color-green: #0d8a4a;       /* THE accent — italic word, CTA, "Finished" pill */
+  --color-green-soft: #e7f3ec;  /* green pill backgrounds */
 
-  /* Neutral cool background — clean, app-like */
-  --color-ink: #0a0a0a;
-  --color-ink-soft: #525252;
+  /* Backwards compat: `brand-*` Tailwind classes still resolve, just
+     anchored at the new Quiet green. Lets unmigrated components keep
+     working while individual screens get rewritten. */
+  --color-brand-50:  #e7f3ec;
+  --color-brand-100: #c8e6d2;
+  --color-brand-200: #a3d4b2;
+  --color-brand-300: #6fb887;
+  --color-brand-400: #339d63;
+  --color-brand-500: #0d8a4a;
+  --color-brand-600: #0a6f3a;
+  --color-brand-700: #07572d;
+  --color-brand-800: #054121;
+  --color-brand-900: #032d17;
 
-  --color-streak: #f59e0b;
-  --color-xp: #facc15;
+  /* Streak/xp — de-saturated to Quiet ink. Indicated by a tiny green dot,
+     not by colorful icons. */
+  --color-streak: #5b574e;
+  --color-xp: #5b574e;
 
-  --font-display: "Onest", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-display: "Inter Tight", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
   --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
 
-  --radius-card: 1.25rem;
+  --radius-card: 1rem;          /* 16px — Quiet uses 16-18 for cards */
   --radius-pill: 9999px;
 }
 
 @layer base {
   html, body {
-    background: #fafafa;
+    background: var(--color-bone);
     color: var(--color-ink);
     font-family: var(--font-display);
   }
@@ -42,113 +55,173 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+  /* Global rule: any <em> in the app is the italic signature moment.
+     Quiet uses <em> intentionally — wrap exactly ONE word per headline.
+     Scoped override below resets <em> back to plain italic inside
+     AI-generated lesson content so accidental *emphasis* in markdown
+     doesn't hijack the brand accent. */
+  em {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 400;
+    color: var(--color-green);
+  }
+  .lesson-prose em,
+  .prose em {
+    font-family: inherit;
+    font-style: italic;
+    font-weight: inherit;
+    color: inherit;
+  }
 }
 
 @layer utilities {
   .font-mono { font-family: var(--font-mono); }
+  .font-serif { font-family: var(--font-serif); font-style: italic; font-weight: 400; }
 
-  .btn-3d {
-    box-shadow: 0 4px 0 0 rgba(0, 0, 0, 0.15);
-    transition: transform 0.05s ease, box-shadow 0.05s ease;
+  /* Mono-caps eyebrow used everywhere in Quiet — labels, step indicators,
+     metadata. Replaces what was `uppercase tracking-wider` before. */
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-ink-muted);
   }
-  .btn-3d:active {
-    transform: translateY(2px);
-    box-shadow: 0 2px 0 0 rgba(0, 0, 0, 0.15);
-  }
-  .btn-3d-brand {
-    box-shadow: 0 4px 0 0 var(--color-brand-700);
-  }
-  .btn-3d-brand:active {
-    box-shadow: 0 2px 0 0 var(--color-brand-700);
-  }
-  .btn-3d-danger {
-    box-shadow: 0 4px 0 0 #b91c1c;
-  }
-  .btn-3d-danger:active {
-    box-shadow: 0 2px 0 0 #b91c1c;
-  }
-
-  .lesson-node {
-    box-shadow: 0 6px 0 0 rgba(0, 0, 0, 0.1);
-    transition: transform 0.1s ease, box-shadow 0.1s ease;
-  }
-  .lesson-node:hover {
-    transform: translateY(-2px);
-  }
-  .lesson-node:active {
-    transform: translateY(2px);
-    box-shadow: 0 3px 0 0 rgba(0, 0, 0, 0.1);
+  .eyebrow-tight {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-ink-muted);
   }
 
-  /* Staggered page-load reveal — set animation-delay inline */
+  /* Primary CTA — THE ONLY element in the entire app with a shadow.
+     Spec is non-negotiable: do not add shadows to anything else. */
+  .btn-primary {
+    background: var(--color-green);
+    color: var(--color-surface);
+    border-radius: 9999px;
+    padding: 16px 32px;
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 16px;
+    box-shadow: 0 1px 2px rgba(13, 138, 74, 0.2), 0 4px 14px rgba(13, 138, 74, 0.18);
+    transition: filter 150ms ease;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .btn-primary:hover { filter: brightness(0.96); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* Secondary/ghost CTA — ink-on-surface pill, no shadow */
+  .btn-ink {
+    background: var(--color-ink);
+    color: var(--color-surface);
+    border-radius: 9999px;
+    padding: 10px 18px;
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 13.5px;
+    border: none;
+    cursor: pointer;
+    transition: filter 150ms ease;
+  }
+  .btn-ink:hover { filter: brightness(1.15); }
+
+  /* Outline pill — transparent with 1px rule border */
+  .btn-outline {
+    background: transparent;
+    color: var(--color-ink);
+    border: 1px solid var(--color-rule);
+    border-radius: 9999px;
+    padding: 8px 16px;
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 13.5px;
+    cursor: pointer;
+    transition: border-color 150ms ease;
+  }
+  .btn-outline:hover { border-color: var(--color-ink); }
+
+  /* Quiet card — flat 1px border, no shadow */
+  .card-quiet {
+    background: var(--color-surface);
+    border: 1px solid var(--color-rule);
+    border-radius: var(--radius-card);
+    transition: border-color 200ms ease;
+  }
+  .card-quiet:hover { border-color: var(--color-ink); }
+
+  /* ── Backwards-compat shims ──
+     The old Duolingo-style btn-3d and lesson-node classes are removed
+     visually (no shadow, no press effect) but the class names still
+     resolve so unmigrated components keep rendering. Components get
+     fully rewritten per screen in subsequent phases. */
+  .btn-3d, .btn-3d-brand, .btn-3d-danger { box-shadow: none !important; }
+  .btn-3d:active, .btn-3d-brand:active, .btn-3d-danger:active {
+    transform: none;
+    box-shadow: none !important;
+  }
+  .lesson-node { box-shadow: none !important; }
+  .lesson-node:hover, .lesson-node:active { transform: none; box-shadow: none !important; }
+
+  /* Subtle reveal — Quiet rule: nothing should "pop" or "bounce" */
   .reveal {
     opacity: 0;
-    animation: reveal 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    animation: reveal 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
   }
 }
 
 @keyframes reveal {
-  0% { opacity: 0; transform: translateY(14px); }
+  0% { opacity: 0; transform: translateY(8px); }
   100% { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes pop {
-  0% { transform: scale(0.9); opacity: 0; }
-  60% { transform: scale(1.05); }
+  0% { transform: scale(0.96); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
 }
-.animate-pop { animation: pop 0.3s ease forwards; }
+.animate-pop { animation: pop 0.2s ease forwards; }
 
 @keyframes slide-up {
-  from { transform: translateY(20px); opacity: 0; }
+  from { transform: translateY(12px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
-.animate-slide-up { animation: slide-up 0.25s ease forwards; }
+.animate-slide-up { animation: slide-up 0.2s ease forwards; }
 
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-6px); }
-  75% { transform: translateX(6px); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
 }
 .animate-shake { animation: shake 0.3s ease; }
 
 @keyframes confetti-fall {
-  0% {
-    transform: translate3d(0, 0, 0) rotate(0deg);
-    opacity: 1;
-  }
-  100% {
-    transform: translate3d(var(--drift, 0), 110vh, 0) rotate(var(--rotate, 360deg));
-    opacity: 0;
-  }
+  0% { transform: translate3d(0, 0, 0) rotate(0deg); opacity: 1; }
+  100% { transform: translate3d(var(--drift, 0), 110vh, 0) rotate(var(--rotate, 360deg)); opacity: 0; }
 }
 
 @keyframes xp-pop {
-  0% {
-    transform: translateY(20px) scale(0.7);
-    opacity: 0;
-  }
-  20% {
-    transform: translateY(0) scale(1.15);
-    opacity: 1;
-  }
-  35% {
-    transform: translateY(-4px) scale(1);
-  }
-  100% {
-    transform: translateY(-80px) scale(0.85);
-    opacity: 0;
-  }
+  0% { transform: translateY(8px); opacity: 0; }
+  30% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(-40px); opacity: 0; }
 }
 
 @keyframes flash-correct {
   0%, 100% { background-color: transparent; }
-  30% { background-color: rgba(18, 183, 106, 0.08); }
+  30% { background-color: rgba(13, 138, 74, 0.06); }
 }
-.animate-flash-correct { animation: flash-correct 0.6s ease; }
+.animate-flash-correct { animation: flash-correct 0.5s ease; }
 
 @keyframes flash-wrong {
   0%, 100% { background-color: transparent; }
-  30% { background-color: rgba(239, 68, 68, 0.08); }
+  30% { background-color: rgba(180, 60, 60, 0.06); }
 }
-.animate-flash-wrong { animation: flash-wrong 0.6s ease; }
+.animate-flash-wrong { animation: flash-wrong 0.5s ease; }

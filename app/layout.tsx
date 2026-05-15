@@ -36,7 +36,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export const viewport: Viewport = {
-  themeColor: "#12b76a",
+  themeColor: "#0d8a4a",
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
@@ -49,7 +49,7 @@ export default async function RootLayout({
   const dir = RTL_LOCALES.has(locale) ? "rtl" : "ltr";
   const tree = (
     <html lang={locale} dir={dir} className="h-full antialiased">
-      <body className="min-h-full flex flex-col font-display bg-zinc-50 text-zinc-900">
+      <body className="min-h-full flex flex-col font-display bg-bone text-ink">
         <LocaleProvider initialLocale={locale}>
           <UserProvider>
             <Header />
@@ -68,7 +68,7 @@ export default async function RootLayout({
     <ClerkProvider
       appearance={{
         variables: {
-          colorPrimary: "#12b76a",
+          colorPrimary: "#0d8a4a",
           borderRadius: "0.75rem",
         },
       }}

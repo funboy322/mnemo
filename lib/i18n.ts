@@ -240,6 +240,8 @@ export type Dict = {
   whyAnyLangTitle: string;
   whyAnyLangBody: string;
   fromPhotoTabBadge: string;
+  fromTopicBack: string;
+  orPhotograph: string;
 };
 
 const en: Dict = {
@@ -384,8 +386,8 @@ const en: Dict = {
   onboardBack: "Back",
   onboardContinue: "Continue",
   onboardStart: "Start learning",
-  onboardTopicTitle: "What do you want to learn?",
-  onboardTopicSub: "Any topic. Be specific — the more concrete, the better the course.",
+  onboardTopicTitle: "What do you want to {em}learn?{/em}",
+  onboardTopicSub: "A topic, a textbook page, a YouTube link. We turn it into a structured 5–12 lesson course with active recall.",
   onboardWhyTitle: "Why this topic?",
   onboardWhySub: "We'll match the depth and tone to your reason.",
   onboardWhyCurious: "Just curious",
@@ -420,6 +422,8 @@ const en: Dict = {
   whyAnyLangTitle: "Lessons in 140+ languages",
   whyAnyLangBody: "Lessons generate natively in 140+ languages — Russian, Turkish, Hindi, Swahili, the languages other learning apps underserve. The interface ships in 6 (English, Russian, Turkish, Spanish, Hindi, Arabic). Community translations welcome.",
   fromPhotoTabBadge: "NEW",
+  fromTopicBack: "back to typing a topic",
+  orPhotograph: "or photograph a page →",
 };
 
 const ru: Dict = {
@@ -574,8 +578,8 @@ const ru: Dict = {
   onboardBack: "Назад",
   onboardContinue: "Дальше",
   onboardStart: "Начать",
-  onboardTopicTitle: "Что хочешь изучить?",
-  onboardTopicSub: "Любая тема. Чем конкретнее, тем лучше получится курс.",
+  onboardTopicTitle: "Что хочется {em}выучить?{/em}",
+  onboardTopicSub: "Тема, страница учебника, ссылка на YouTube. Превратим в курс из 5–12 уроков с активным повторением.",
   onboardWhyTitle: "Зачем тебе это?",
   onboardWhySub: "Под цель подберём глубину и тон материала.",
   onboardWhyCurious: "Просто интересно",
@@ -615,6 +619,8 @@ const ru: Dict = {
   whyAnyLangTitle: "Уроки на 140+ языках",
   whyAnyLangBody: "Уроки нативно на любом из 140+ языков — русский, турецкий, хинди, суахили, те языки, которые крупные API-сервисы часто игнорируют. Сам интерфейс пока на 6 (английский, русский, турецкий, испанский, хинди, арабский). Community translations welcome.",
   fromPhotoTabBadge: "НОВОЕ",
+  fromTopicBack: "вернуться к вводу темы",
+  orPhotograph: "или сфотографировать страницу →",
 };
 
 const tr: Dict = {
@@ -759,8 +765,8 @@ const tr: Dict = {
   onboardBack: "Geri",
   onboardContinue: "Devam",
   onboardStart: "Başla",
-  onboardTopicTitle: "Ne öğrenmek istersin?",
-  onboardTopicSub: "Herhangi bir konu. Ne kadar net olursa, kurs o kadar iyi olur.",
+  onboardTopicTitle: "Ne {em}öğrenmek{/em} istersin?",
+  onboardTopicSub: "Bir konu, bir kitap sayfası, bir YouTube bağlantısı. Aktif hatırlama ile 5–12 derslik yapılandırılmış bir kursa dönüştürürüz.",
   onboardWhyTitle: "Bu konuyu neden?",
   onboardWhySub: "Nedenine göre derinliği ve tonu ayarlarız.",
   onboardWhyCurious: "Sadece merak",
@@ -795,6 +801,8 @@ const tr: Dict = {
   whyAnyLangTitle: "140+ dilde dersler",
   whyAnyLangBody: "Dersler 140+ dilde yerel olarak üretilir — Rusça, Türkçe, Hintçe, Svahili, büyük API'ların ihmal ettiği diller. Arayüz 6 dilde (İngilizce, Rusça, Türkçe, İspanyolca, Hintçe, Arapça). Topluluk çevirileri memnuniyetle karşılanır.",
   fromPhotoTabBadge: "YENİ",
+  fromTopicBack: "konu yazmaya dön",
+  orPhotograph: "veya bir sayfanın fotoğrafını çek →",
 };
 
 const es: Dict = {
@@ -913,8 +921,8 @@ const es: Dict = {
   onboardBack: "Atrás",
   onboardContinue: "Continuar",
   onboardStart: "Empezar a aprender",
-  onboardTopicTitle: "¿Qué quieres aprender?",
-  onboardTopicSub: "Cualquier tema. Sé específico — cuanto más concreto, mejor será el curso.",
+  onboardTopicTitle: "¿Qué quieres {em}aprender?{/em}",
+  onboardTopicSub: "Un tema, una página de libro, un enlace de YouTube. Lo convertimos en un curso estructurado de 5–12 lecciones con repaso activo.",
   onboardWhyTitle: "¿Por qué este tema?",
   onboardWhySub: "Adaptaremos la profundidad y el tono a tu razón.",
   onboardWhyCurious: "Solo por curiosidad",
@@ -945,6 +953,8 @@ const es: Dict = {
   whyAnyLangTitle: "Más de 140 idiomas",
   whyAnyLangBody: "Las lecciones se generan de forma nativa en tu idioma. Ruso, turco, hindi, suajili — Gemma 4 cubre a los estudiantes que las principales APIs a veces no cubren.",
   fromPhotoTabBadge: "NUEVO",
+  fromTopicBack: "volver a escribir un tema",
+  orPhotograph: "o fotografía una página →",
   onboardStep: (n, total) => `Paso ${n} de ${total}`,
   lessonNumber: (n) => `Lección ${n}`,
   exerciseN: (n, total) => `Ejercicio ${n} de ${total}`,
@@ -1072,8 +1082,8 @@ const hi: Dict = {
   onboardBack: "वापस",
   onboardContinue: "जारी रखें",
   onboardStart: "सीखना शुरू करें",
-  onboardTopicTitle: "आप क्या सीखना चाहते हैं?",
-  onboardTopicSub: "कोई भी विषय। विशिष्ट रहें — जितना अधिक ठोस होगा, कोर्स उतना ही बेहतर होगा।",
+  onboardTopicTitle: "आप {em}क्या{/em} सीखना चाहते हैं?",
+  onboardTopicSub: "एक विषय, पाठ्यपुस्तक का पन्ना, या YouTube लिंक। हम इसे सक्रिय स्मरण के साथ 5–12 पाठों का संरचित कोर्स बना देते हैं।",
   onboardWhyTitle: "यह विषय क्यों?",
   onboardWhySub: "हम आपकी वजह के अनुसार गहराई और लहजे का मिलान करेंगे।",
   onboardWhyCurious: "बस उत्सुक हूँ",
@@ -1104,6 +1114,8 @@ const hi: Dict = {
   whyAnyLangTitle: "140+ भाषाएँ",
   whyAnyLangBody: "पाठ आपकी भाषा में मूल रूप से उत्पन्न होते हैं। रूसी, तुर्की, हिंदी, स्वाहिली — जेम्मा 4 उन शिक्षार्थियों को कवर करता है जिन्हें प्रमुख एपीआई कभी-कभी नहीं करते।",
   fromPhotoTabBadge: "नया",
+  fromTopicBack: "विषय टाइप करने पर वापस जाएं",
+  orPhotograph: "या किसी पन्ने की तस्वीर लें →",
   onboardStep: (n, total) => `चरण ${n} / ${total}`,
   lessonNumber: (n) => `पाठ ${n}`,
   exerciseN: (n, total) => `अभ्यास ${n} / ${total}`,
@@ -1231,8 +1243,8 @@ const ar: Dict = {
   onboardBack: "رجوع",
   onboardContinue: "متابعة",
   onboardStart: "ابدأ التعلم",
-  onboardTopicTitle: "ماذا تريد أن تتعلم؟",
-  onboardTopicSub: "أي موضوع. كن محددًا — كلما كان الموضوع أكثر وضوحًا، كانت الدورة أفضل.",
+  onboardTopicTitle: "ماذا تريد أن {em}تتعلم؟{/em}",
+  onboardTopicSub: "موضوع، صفحة كتاب، رابط يوتيوب. نحوّله إلى دورة منظمة من 5 إلى 12 درسًا مع تذكر نشط.",
   onboardWhyTitle: "لماذا هذا الموضوع؟",
   onboardWhySub: "سوف نناسب العمق والنبرة لسببك.",
   onboardWhyCurious: "مجرد فضول",
@@ -1263,6 +1275,8 @@ const ar: Dict = {
   whyAnyLangTitle: "أكثر من 140 لغة",
   whyAnyLangBody: "يتم إنشاء الدروس بلغتك الأم. الروسية، التركية، الهندية، السواحلية — يغطي جيما 4 المتعلمين الذين لا تغطيهم واجهات برمجة التطبيقات الرئيسية أحيانًا.",
   fromPhotoTabBadge: "جديد",
+  fromTopicBack: "العودة إلى كتابة الموضوع",
+  orPhotograph: "أو التقط صورة لصفحة ←",
   onboardStep: (n, total) => `الخطوة ${n} من ${total}`,
   lessonNumber: (n) => `الدرس ${n}`,
   exerciseN: (n, total) => `التمرين ${n} من ${total}`,
