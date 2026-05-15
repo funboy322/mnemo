@@ -242,6 +242,15 @@ export type Dict = {
   fromPhotoTabBadge: string;
   fromTopicBack: string;
   orPhotograph: string;
+  /** Headline on the dashboard. Use {em} markers to set the italic
+   *  signature moment (e.g. "Welcome {em}back.{/em}"). */
+  welcomeBack: string;
+  /** Section title above the course grid on the dashboard. */
+  yourShelf: string;
+  /** Stat labels on the dashboard. Lowercase, used in JBM caps. */
+  statDayStreak: string;
+  statXpEarned: string;
+  statBestStreak: string;
 };
 
 const en: Dict = {
@@ -424,6 +433,11 @@ const en: Dict = {
   fromPhotoTabBadge: "NEW",
   fromTopicBack: "back to typing a topic",
   orPhotograph: "or photograph a page →",
+  welcomeBack: "Welcome {em}back.{/em}",
+  yourShelf: "Your shelf",
+  statDayStreak: "day streak",
+  statXpEarned: "xp earned",
+  statBestStreak: "best streak",
 };
 
 const ru: Dict = {
@@ -621,6 +635,11 @@ const ru: Dict = {
   fromPhotoTabBadge: "НОВОЕ",
   fromTopicBack: "вернуться к вводу темы",
   orPhotograph: "или сфотографировать страницу →",
+  welcomeBack: "С {em}возвращением.{/em}",
+  yourShelf: "Твоя полка",
+  statDayStreak: "день подряд",
+  statXpEarned: "очков опыта",
+  statBestStreak: "лучший стрик",
 };
 
 const tr: Dict = {
@@ -803,6 +822,11 @@ const tr: Dict = {
   fromPhotoTabBadge: "YENİ",
   fromTopicBack: "konu yazmaya dön",
   orPhotograph: "veya bir sayfanın fotoğrafını çek →",
+  welcomeBack: "Tekrar {em}hoş geldin.{/em}",
+  yourShelf: "Rafın",
+  statDayStreak: "gün üst üste",
+  statXpEarned: "xp kazanıldı",
+  statBestStreak: "en iyi seri",
 };
 
 const es: Dict = {
@@ -955,6 +979,11 @@ const es: Dict = {
   fromPhotoTabBadge: "NUEVO",
   fromTopicBack: "volver a escribir un tema",
   orPhotograph: "o fotografía una página →",
+  welcomeBack: "{em}Bienvenido{/em} de vuelta.",
+  yourShelf: "Tu estantería",
+  statDayStreak: "días seguidos",
+  statXpEarned: "xp ganados",
+  statBestStreak: "mejor racha",
   onboardStep: (n, total) => `Paso ${n} de ${total}`,
   lessonNumber: (n) => `Lección ${n}`,
   exerciseN: (n, total) => `Ejercicio ${n} de ${total}`,
@@ -1116,6 +1145,11 @@ const hi: Dict = {
   fromPhotoTabBadge: "नया",
   fromTopicBack: "विषय टाइप करने पर वापस जाएं",
   orPhotograph: "या किसी पन्ने की तस्वीर लें →",
+  welcomeBack: "{em}वापसी{/em} पर स्वागत है।",
+  yourShelf: "आपकी शेल्फ",
+  statDayStreak: "दिन की लकीर",
+  statXpEarned: "xp अर्जित",
+  statBestStreak: "सर्वश्रेष्ठ लकीर",
   onboardStep: (n, total) => `चरण ${n} / ${total}`,
   lessonNumber: (n) => `पाठ ${n}`,
   exerciseN: (n, total) => `अभ्यास ${n} / ${total}`,
@@ -1277,6 +1311,11 @@ const ar: Dict = {
   fromPhotoTabBadge: "جديد",
   fromTopicBack: "العودة إلى كتابة الموضوع",
   orPhotograph: "أو التقط صورة لصفحة ←",
+  welcomeBack: "{em}مرحبًا{/em} بعودتك.",
+  yourShelf: "رفك",
+  statDayStreak: "يوم متتالي",
+  statXpEarned: "نقاط الخبرة",
+  statBestStreak: "أفضل سلسلة",
   onboardStep: (n, total) => `الخطوة ${n} من ${total}`,
   lessonNumber: (n) => `الدرس ${n}`,
   exerciseN: (n, total) => `التمرين ${n} من ${total}`,
